@@ -23,6 +23,7 @@ Why it is built this way (generator, Kafka client, versioning): [ADR 0002](../do
 | `documents/*.schema.json` | Intent package and review brief front matter |
 | `documents/testdata/` | The worked examples from the template docs, verbatim |
 | `events`, `documents`, `kafka` | Go packages (`*_gen.go` is generated, never edit it) |
+| `agents` | The Temporal activity contract between the orchestrator and the workers that do a run's work: activity names, request and result types, plan validation, review brief rendering (ADR 0006) |
 | `internal/` | Schema compiler and bundler, the compatibility checker, the registry client, code generators |
 
 ## Events
@@ -71,6 +72,16 @@ with header `content-type: application/cloudevents+json; charset=UTF-8`.
 
 Each schema's description names its producer, main consumers and subject; the design's
 [event catalogue](../docs/design/HOTL%20—%20Run%20State%20Machine%20and%20Event%20Catalogue.md) has the full picture.
+
+## Agent activities
+
+Package `agents` is not generated from a schema. It holds the Go types that cross Temporal between the
+orchestrator's run workflow and the workers that implement its activities, such as the agent runtime on task queue
+`agents.TaskQueue` (`hotl-agents`). The activity names (`agents.ActivityPlan`, `agents.ActivityImplement`, …) and
+the JSON field names are recorded in workflow histories, so they change only compatibly: add optional fields, and
+never rename or remove one. It also has `ValidateTasks` (the plan checks the workflow applies), `RenderBrief` (a
+review brief per the template, checked against its schema) and `Inline`/`DecodeInline` (documents carried in
+`data:` URIs until a document store exists).
 
 ## Using the Go library
 
