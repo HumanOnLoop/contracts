@@ -18,16 +18,25 @@ import (
 // TaskQueue is the task queue the agent runtime polls for the agent activities it implements.
 const TaskQueue = "hotl-agents"
 
+// TaskQueueCICD is the task queue the CI/CD adapter polls for the CI/CD activities it implements.
+const TaskQueueCICD = "hotl-cicd"
+
 // Activity names. They are recorded in every run's history: never rename one.
 const (
-	ActivityPlan       = "Plan"
-	ActivityImplement  = "Implement"
-	ActivityTest       = "Test"
-	ActivityReview     = "Review"
-	ActivityCheckRules = "CheckRules"
-	ActivityPlanMerge  = "PlanMerge"
-	ActivityFixMain    = "FixMain"
-	ActivityReport     = "Report"
+	ActivityPlan            = "Plan"
+	ActivityImplement       = "Implement"
+	ActivityTest            = "Test"
+	ActivityReview          = "Review"
+	ActivityCheckRules      = "CheckRules"
+	ActivityPlanMerge       = "PlanMerge"
+	ActivityFixMain         = "FixMain"
+	ActivityUpdateBranch    = "UpdateBranch"
+	ActivityReport          = "Report"
+	ActivityPushBranch      = "PushBranch"
+	ActivityMerge           = "Merge"
+	ActivityPublishArtifact = "PublishArtifact"
+	ActivityWatchMain       = "WatchMain"
+	ActivityRevert          = "Revert"
 )
 
 // RunRef identifies the run an activity works for. Every request carries one.
@@ -173,6 +182,8 @@ type TaskRequest struct {
 	Run     RunRef         `json:"run"`
 	Task    TaskSpec       `json:"task"`
 	Attempt events.Attempt `json:"attempt"`
+	// Branch overrides the default run branch (e.g. when checking a FixMain branch before merging).
+	Branch events.Branch `json:"branch,omitempty"`
 	// Feedback holds what the checks said about the previous attempt.
 	Feedback []string `json:"feedback,omitempty"`
 	// Decisions holds the decisions on briefs this task raised, oldest first.
@@ -273,10 +284,12 @@ type ArtifactSpec struct {
 // MergeStep merges one repo's feature branch. Providers merge first and may publish; consumers merge after every
 // provider, with their dependencies bumped to what the providers published.
 type MergeStep struct {
-	Repo     events.Repo   `json:"repo"`
-	Branch   events.Branch `json:"branch"`
-	Provider bool          `json:"provider,omitempty"`
-	Publish  *ArtifactSpec `json:"publish,omitempty"`
+	Repo      events.Repo     `json:"repo"`
+	Branch    events.Branch   `json:"branch"`
+	Provider  bool            `json:"provider,omitempty"`
+	Publish   *ArtifactSpec   `json:"publish,omitempty"`
+	DependsOn []events.Repo   `json:"dependsOn,omitempty"`
+	Tasks     []events.TaskID `json:"tasks,omitempty"`
 }
 
 // MergePlan is the integrator's merge sequence.
@@ -302,10 +315,22 @@ type MergeRequest struct {
 	Bumps []Artifact `json:"bumps,omitempty"`
 }
 
-// MergeResult is main's new head.
+// MergeStatus reports why a Merge attempt succeeded or could not merge yet.
+type MergeStatus string
+
+const (
+	MergeMerged       MergeStatus = "merged"
+	MergeConflict     MergeStatus = "conflict"
+	MergeBehind       MergeStatus = "behind"
+	MergeChecksFailed MergeStatus = "checks-failed"
+)
+
+// MergeResult is main's new head, or why the branch could not be merged yet.
 type MergeResult struct {
-	Commit      events.Commit `json:"commit"`
+	Status      MergeStatus   `json:"status,omitempty"`
+	Commit      events.Commit `json:"commit,omitempty"`
 	PullRequest events.URL    `json:"pullRequest,omitempty"`
+	Summary     string        `json:"summary,omitempty"`
 }
 
 // PublishRequest asks the CI/CD adapter to run a publish step for a merged provider.
@@ -343,14 +368,56 @@ type FixMainRequest struct {
 	Attempt   int           `json:"attempt"`
 	Escalate  bool          `json:"escalate,omitempty"`
 	Decisions []Decision    `json:"decisions,omitempty"`
+	Feedback  []string      `json:"feedback,omitempty"`
+	Limit     Budget        `json:"limit,omitzero"`
 }
 
-// FixMainResult is main's head after the fix or revert, or the brief the integrator raised.
+// FixMainResult is main's head after the fix or revert, a fix branch awaiting checks, or the brief the integrator raised.
 type FixMainResult struct {
 	Commit   events.Commit `json:"commit,omitempty"`
+	Branch   events.Branch `json:"branch,omitempty"`
 	Reverted bool          `json:"reverted,omitempty"`
 	Brief    *BriefRef     `json:"brief,omitempty"`
 	Usage    Usage         `json:"usage,omitzero"`
+}
+
+// RevertRequest asks the CI/CD adapter to revert a merge commit on main.
+type RevertRequest struct {
+	Run    RunRef        `json:"run"`
+	Repo   events.Repo   `json:"repo"`
+	Commit events.Commit `json:"commit"`
+	Reason string        `json:"reason,omitempty"`
+}
+
+// RevertResult is main's head after reverting the merge.
+type RevertResult struct {
+	Commit      events.Commit `json:"commit"`
+	PullRequest events.URL    `json:"pullRequest,omitempty"`
+}
+
+// UpdateBranchRequest asks the integrator agent to update a run branch (merge origin/main, resolve conflicts,
+// bump published dependencies).
+type UpdateBranchRequest struct {
+	Run      RunRef        `json:"run"`
+	Repo     events.Repo   `json:"repo"`
+	Branch   events.Branch `json:"branch"`
+	Reason   string        `json:"reason,omitempty"`
+	Bumps    []Artifact    `json:"bumps,omitempty"`
+	Attempt  int           `json:"attempt"`
+	Feedback []string      `json:"feedback,omitempty"`
+	Limit    Budget        `json:"limit,omitzero"`
+}
+
+// UpdateBranchResult is the outcome of updating a run branch.
+type UpdateBranchResult struct {
+	Outcome      Outcome       `json:"outcome"`
+	Commit       events.Commit `json:"commit,omitempty"`
+	CodeChanged  bool          `json:"codeChanged,omitempty"`
+	Brief        *BriefRef     `json:"brief,omitempty"`
+	Reason       string        `json:"reason,omitempty"`
+	Summary      string        `json:"summary,omitempty"`
+	FilesChanged []string      `json:"filesChanged,omitempty"`
+	Usage        Usage         `json:"usage,omitzero"`
 }
 
 // ReportRequest asks the integrator for the feature result: merged branches, pipeline evidence, test results and

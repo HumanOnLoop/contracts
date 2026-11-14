@@ -147,3 +147,30 @@ func TestReviewTypesRoundTrip(t *testing.T) {
 		t.Errorf("old review result: %+v, %v", old, err)
 	}
 }
+
+func TestIntegratorAndCICDTypesRoundTrip(t *testing.T) {
+	mr := MergeResult{Status: MergeConflict, Summary: "conflict in main.go"}
+	b, err := json.Marshal(mr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var mrBack MergeResult
+	if err := json.Unmarshal(b, &mrBack); err != nil || mrBack.Status != MergeConflict || mrBack.Summary != "conflict in main.go" {
+		t.Errorf("MergeResult: %+v, %v", mrBack, err)
+	}
+
+	ub := UpdateBranchRequest{Run: RunRef{RunID: "RUN-1-1"}, Repo: "playground", Branch: "run/RUN-1-1", Attempt: 1,
+		Bumps: []Artifact{{Kind: "go-module", Name: "github.com/HumanOnLoop/contracts", Version: "v0.5.0"}}}
+	b, _ = json.Marshal(ub)
+	var ubBack UpdateBranchRequest
+	if err := json.Unmarshal(b, &ubBack); err != nil || len(ubBack.Bumps) != 1 || ubBack.Bumps[0].Version != "v0.5.0" {
+		t.Errorf("UpdateBranchRequest: %+v, %v", ubBack, err)
+	}
+
+	rr := RevertRequest{Run: RunRef{RunID: "RUN-1-1"}, Repo: "playground", Commit: events.Commit(strings.Repeat("a", 40)), Reason: "main broke"}
+	b, _ = json.Marshal(rr)
+	var rrBack RevertRequest
+	if err := json.Unmarshal(b, &rrBack); err != nil || rrBack.Reason != "main broke" {
+		t.Errorf("RevertRequest: %+v, %v", rrBack, err)
+	}
+}
