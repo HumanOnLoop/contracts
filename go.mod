@@ -1,4 +1,4 @@
-module github.com/osbe/contracts
+module github.com/HumanOnLoop/contracts
 
 go 1.27.0
 

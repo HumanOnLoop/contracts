@@ -13,7 +13,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/kmsg"
 
-	"github.com/osbe/contracts/events"
+	"github.com/HumanOnLoop/contracts/events"
 )
 
 // TestIntegrationProduceConsume publishes events and reads them back through a real Kafka. It runs only when

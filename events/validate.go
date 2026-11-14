@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/osbe/contracts/internal/schema"
+	"github.com/HumanOnLoop/contracts/internal/schema"
 )
 
 // ValidationError lists every way an event fails its schema. Problems[i].Path is a JSON pointer into the

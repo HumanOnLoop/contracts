@@ -12,8 +12,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/osbe/contracts/internal/compat"
-	"github.com/osbe/contracts/internal/schema"
+	"github.com/HumanOnLoop/contracts/internal/compat"
+	"github.com/HumanOnLoop/contracts/internal/schema"
 )
 
 // fakeRegistry is the slice of the Apicurio v3 API that Client uses. It decides compatibility with compat.Backward.

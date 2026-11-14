@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/osbe/contracts"
+	"github.com/HumanOnLoop/contracts"
 )
 
 // Artifact is a schema as registered in the schema registry.

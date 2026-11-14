@@ -8,7 +8,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/osbe/contracts/internal/schema"
+	"github.com/HumanOnLoop/contracts/internal/schema"
 )
 
 // TestBackwardCompatibleWithLastRelease fails when a schema in the working tree is not backward compatible with

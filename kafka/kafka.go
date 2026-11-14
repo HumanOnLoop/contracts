@@ -17,7 +17,7 @@ import (
 
 	"github.com/twmb/franz-go/pkg/kgo"
 
-	"github.com/osbe/contracts/events"
+	"github.com/HumanOnLoop/contracts/events"
 )
 
 // Option configures a Producer or Consumer.

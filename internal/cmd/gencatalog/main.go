@@ -14,7 +14,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/osbe/contracts/internal/schema"
+	"github.com/HumanOnLoop/contracts/internal/schema"
 )
 
 func main() {

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/osbe/contracts"
+	"github.com/HumanOnLoop/contracts"
 )
 
 func TestEmbeddedSchemasCompile(t *testing.T) {

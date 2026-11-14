@@ -16,7 +16,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 
-	"github.com/osbe/contracts"
+	"github.com/HumanOnLoop/contracts"
 )
 
 // Problem is one way a value fails its schema.

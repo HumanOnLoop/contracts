@@ -4,7 +4,7 @@ Part of HOTL (Human On The Loop). The schemas every HOTL service shares, and the
 
 - the **event envelope** and a schema for each of the **39 events** in the catalogue, one directory per topic;
 - the **front matter** of intent packages and review briefs;
-- a Go module, `github.com/osbe/contracts`, with generated types and helpers to build, validate, produce and
+- a Go module, `github.com/HumanOnLoop/contracts`, with generated types and helpers to build, validate, produce and
   consume events.
 
 The schemas are the source of truth. Change a schema, run `make generate`, commit both. MCP tool definitions
@@ -74,11 +74,21 @@ Each schema's description names its producer, main consumers and subject; the de
 
 ## Using the Go library
 
+The module is private on GitHub. Fetch it directly, not through the public proxy:
+
+```sh
+go env -w GOPRIVATE='github.com/HumanOnLoop/*'   # once per machine; git must be able to read the org (gh auth setup-git)
+go get github.com/HumanOnLoop/contracts@v0.2.1
+```
+
+Services depend on a tagged release like any Go module. To work on contracts and a service together, use the
+uncommitted `go.work` described in the workspace's CLAUDE.md, not a `replace` directive.
+
 ```go
 import (
-	"github.com/osbe/contracts/documents"
-	"github.com/osbe/contracts/events"
-	"github.com/osbe/contracts/kafka"
+	"github.com/HumanOnLoop/contracts/documents"
+	"github.com/HumanOnLoop/contracts/events"
+	"github.com/HumanOnLoop/contracts/kafka"
 )
 
 // Build: New fills in specversion, id, time and type, and validates against both schemas.

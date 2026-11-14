@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/osbe/contracts"
-	"github.com/osbe/contracts/internal/schema"
+	"github.com/HumanOnLoop/contracts"
+	"github.com/HumanOnLoop/contracts/internal/schema"
 )
 
 func TestCatalogCoversEverySchema(t *testing.T) {

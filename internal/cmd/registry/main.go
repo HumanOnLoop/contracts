@@ -15,8 +15,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/osbe/contracts/internal/registry"
-	"github.com/osbe/contracts/internal/schema"
+	"github.com/HumanOnLoop/contracts/internal/registry"
+	"github.com/HumanOnLoop/contracts/internal/schema"
 )
 
 func main() {

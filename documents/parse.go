@@ -13,7 +13,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"github.com/osbe/contracts/internal/schema"
+	"github.com/HumanOnLoop/contracts/internal/schema"
 )
 
 // ValidationError lists every way a front matter fails its schema. Problems[i].Path is a JSON pointer such as
