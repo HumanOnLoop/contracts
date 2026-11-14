@@ -226,7 +226,9 @@ type Commit string
 // A brief was answered, from whichever channel answered first, or its default
 // applied at the deadline. Topic hotl.brief; subject and key: the brief id.
 // Producer: Review service. Main consumers: Orchestrator (signal), knowledge
-// graph.
+// graph. taskId names the task a budget or failure brief was raised about, so a
+// decision on a brief raised from BudgetExceeded or TaskFailed reaches the right
+// task.
 type DecisionRecorded struct {
 	// True when the answer changes the acceptance criteria, so a new intent version
 	// needs the PO's signature.
@@ -247,6 +249,9 @@ type DecisionRecorded struct {
 
 	// The reviewer's reason, if given.
 	Reason *string `json:"reason,omitempty,omitzero"`
+
+	// TaskID corresponds to the JSON schema field "taskId".
+	TaskID *TaskID `json:"taskId,omitempty,omitzero"`
 
 	// Free-text answer or note from the reviewer.
 	Text *string `json:"text,omitempty,omitzero"`

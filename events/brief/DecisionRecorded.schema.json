@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/osbe/contracts/events/brief/DecisionRecorded.schema.json",
   "title": "DecisionRecorded",
-  "description": "A brief was answered, from whichever channel answered first, or its default applied at the deadline. Topic hotl.brief; subject and key: the brief id. Producer: Review service. Main consumers: Orchestrator (signal), knowledge graph.",
+  "description": "A brief was answered, from whichever channel answered first, or its default applied at the deadline. Topic hotl.brief; subject and key: the brief id. Producer: Review service. Main consumers: Orchestrator (signal), knowledge graph. taskId names the task a budget or failure brief was raised about, so a decision on a brief raised from BudgetExceeded or TaskFailed reaches the right task.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -34,6 +34,9 @@
     "changesCriteria": {
       "type": "boolean",
       "description": "True when the answer changes the acceptance criteria, so a new intent version needs the PO's signature."
+    },
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
     }
   },
   "required": [
