@@ -109,3 +109,70 @@ type ReviewBriefUrgency string
 const ReviewBriefUrgencyHigh ReviewBriefUrgency = "high"
 const ReviewBriefUrgencyLow ReviewBriefUrgency = "low"
 const ReviewBriefUrgencyNormal ReviewBriefUrgency = "normal"
+
+// Front matter of a rule definition in the rules repo: the rule envelope every
+// rule shares (docs/design: Initial System Design, Decisions: rule language), plus
+// a title and a lifecycle status. The body is the rule itself; for an llm rule,
+// natural language an LLM judge applies to a change. Scope fields left out match
+// everything.
+type Rule struct {
+	// What evaluates the rule: an OPA/Rego policy, an architecture test, or an LLM
+	// judge (natural language).
+	Evaluator RuleEvaluator `json:"evaluator"`
+
+	// Rule id, stable across the rule's versions, for example GO-ERR-1.
+	ID string `json:"id"`
+
+	// The role or group that owns the rule and decides on changes to it, for example
+	// architects.
+	Owner string `json:"owner"`
+
+	// Where the rule applies: a change is in scope when its repo matches and at least
+	// one changed file matches both languages and paths.
+	Scope RuleScope `json:"scope"`
+
+	// hard blocks a change; soft warns.
+	Severity RuleSeverity `json:"severity"`
+
+	// Lifecycle state; active when left out. Shadow rules are evaluated and reported
+	// but never block.
+	Status *RuleStatus `json:"status,omitempty,omitzero"`
+
+	// What the rule asks for, in one line.
+	Title string `json:"title"`
+
+	// Version of the rule, from 1; a change to the rule's meaning increments it.
+	Version string `json:"version"`
+}
+
+type RuleEvaluator string
+
+const RuleEvaluatorArchtest RuleEvaluator = "archtest"
+const RuleEvaluatorLlm RuleEvaluator = "llm"
+const RuleEvaluatorRego RuleEvaluator = "rego"
+
+// Where the rule applies: a change is in scope when its repo matches and at least
+// one changed file matches both languages and paths.
+type RuleScope struct {
+	// Languages of the changed files, for example go or yaml.
+	Languages []string `json:"languages,omitempty,omitzero"`
+
+	// Slash-separated glob patterns relative to the repo root; ** matches any number
+	// of directories.
+	Paths []string `json:"paths,omitempty,omitzero"`
+
+	// Repo names, or * for every repo.
+	Repos []string `json:"repos,omitempty,omitzero"`
+}
+
+type RuleSeverity string
+
+const RuleSeverityHard RuleSeverity = "hard"
+const RuleSeveritySoft RuleSeverity = "soft"
+
+type RuleStatus string
+
+const RuleStatusActive RuleStatus = "active"
+const RuleStatusProposed RuleStatus = "proposed"
+const RuleStatusRetired RuleStatus = "retired"
+const RuleStatusShadow RuleStatus = "shadow"

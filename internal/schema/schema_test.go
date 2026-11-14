@@ -30,7 +30,7 @@ func TestArtifacts(t *testing.T) {
 		}
 	}
 	want := map[string]int{"hotl": 1, "hotl.intent": 5, "hotl.run": 19, "hotl.brief": 7, "hotl.rule": 5,
-		"hotl.knowledge": 3, "hotl.documents": 2}
+		"hotl.knowledge": 3, "hotl.documents": 3}
 	for g, n := range want {
 		if groups[g] != n {
 			t.Errorf("group %s has %d schemas, want %d", g, groups[g], n)

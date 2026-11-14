@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/documents/rule.schema.json",
+  "title": "Rule",
+  "description": "Front matter of a rule definition in the rules repo: the rule envelope every rule shares (docs/design: Initial System Design, Decisions: rule language), plus a title and a lifecycle status. The body is the rule itself; for an llm rule, natural language an LLM judge applies to a change. Scope fields left out match everything.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "scope", "severity", "owner", "version", "evaluator"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$",
+      "description": "Rule id, stable across the rule's versions, for example GO-ERR-1."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "What the rule asks for, in one line."
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where the rule applies: a change is in scope when its repo matches and at least one changed file matches both languages and paths.",
+      "properties": {
+        "repos": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Repo names, or * for every repo."
+        },
+        "languages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^[a-z][a-z0-9+#-]*$"},
+          "description": "Languages of the changed files, for example go or yaml."
+        },
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Slash-separated glob patterns relative to the repo root; ** matches any number of directories."
+        }
+      }
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["hard", "soft"],
+      "description": "hard blocks a change; soft warns."
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The role or group that owns the rule and decides on changes to it, for example architects."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$",
+      "description": "Version of the rule, from 1; a change to the rule's meaning increments it."
+    },
+    "evaluator": {
+      "type": "string",
+      "enum": ["rego", "archtest", "llm"],
+      "description": "What evaluates the rule: an OPA/Rego policy, an architecture test, or an LLM judge (natural language)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "shadow", "active", "retired"],
+      "description": "Lifecycle state; active when left out. Shadow rules are evaluated and reported but never block."
+    }
+  }
+}

@@ -34,8 +34,10 @@ generate: ## Regenerate the Go types and the event catalogue from the schemas
 	go run $(GO_JSONSCHEMA) $(GEN_FLAGS) --package events --output events/types_gen.go \
 		--schema-package $(SCHEMA_BASE)/documents/intent-package.schema.json=github.com/HumanOnLoop/contracts/documents \
 		--schema-package $(SCHEMA_BASE)/documents/review-brief.schema.json=github.com/HumanOnLoop/contracts/documents \
+		--schema-package $(SCHEMA_BASE)/documents/rule.schema.json=github.com/HumanOnLoop/contracts/documents \
 		--schema-output $(SCHEMA_BASE)/documents/intent-package.schema.json=documents/types_gen.go \
 		--schema-output $(SCHEMA_BASE)/documents/review-brief.schema.json=documents/types_gen.go \
+		--schema-output $(SCHEMA_BASE)/documents/rule.schema.json=documents/types_gen.go \
 		events/common.schema.json events/*/*.schema.json documents/*.schema.json
 	go run ./internal/cmd/gencatalog events/catalog_gen.go
 

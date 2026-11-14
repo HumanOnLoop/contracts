@@ -3,7 +3,7 @@
 Part of HOTL (Human On The Loop). The schemas every HOTL service shares, and the Go library generated from them:
 
 - the **event envelope** and a schema for each of the **39 events** in the catalogue, one directory per topic;
-- the **front matter** of intent packages and review briefs;
+- the **front matter** of intent packages, review briefs and rules (the rule envelope);
 - a Go module, `github.com/HumanOnLoop/contracts`, with generated types and helpers to build, validate, produce and
   consume events.
 
@@ -20,10 +20,10 @@ Why it is built this way (generator, Kafka client, versioning): [ADR 0002](../do
 | `events/common.schema.json` | Shared definitions (ids, document references, enums). Not an event |
 | `events/<topic>/<Event>.schema.json` | One payload schema per event; the directory is the topic (`run` → `hotl.run`) |
 | `events/testdata/<Event>.json` | A valid example payload for every event, checked by the tests |
-| `documents/*.schema.json` | Intent package and review brief front matter |
-| `documents/testdata/` | The worked examples from the template docs, verbatim |
+| `documents/*.schema.json` | Intent package, review brief and rule front matter |
+| `documents/testdata/` | The worked examples from the template docs, verbatim, and a rule |
 | `events`, `documents`, `kafka` | Go packages (`*_gen.go` is generated, never edit it) |
-| `agents` | The Temporal activity contract between the orchestrator and the workers that do a run's work: activity names, request and result types, plan validation, review brief rendering (ADR 0006) |
+| `agents` | The Temporal activity contract between the orchestrator and the workers that do a run's work: activity names, request and result types, plan validation, review brief rendering (ADR 0006), the tester's report and the reviewer's findings (ADR 0007) |
 | `internal/` | Schema compiler and bundler, the compatibility checker, the registry client, code generators |
 
 ## Events
@@ -83,13 +83,18 @@ never rename or remove one. It also has `ValidateTasks` (the plan checks the wor
 review brief per the template, checked against its schema) and `Inline`/`DecodeInline` (documents carried in
 `data:` URIs until a document store exists).
 
+Since v0.4.0 the tester and the reviewer have their types (ADR 0007): `TestReport` (criterion-to-test mapping and
+the runtime's verified run, on `TaskResult.TestReport` and `CheckRequest.TestReport`) and `Finding` (rule id or
+`general`, file and line, `blocking` or `advisory`, issue and fix, on `ReviewResult.Findings`; `Finding.String`
+is the line the implementer's next attempt gets).
+
 ## Using the Go library
 
 The module is private on GitHub. Fetch it directly, not through the public proxy:
 
 ```sh
 go env -w GOPRIVATE='github.com/HumanOnLoop/*'   # once per machine; git must be able to read the org (gh auth setup-git)
-go get github.com/HumanOnLoop/contracts@v0.2.1
+go get github.com/HumanOnLoop/contracts@v0.4.0
 ```
 
 Services depend on a tagged release like any Go module. To work on contracts and a service together, use the
@@ -124,6 +129,7 @@ err = c.Run(ctx, func(ctx context.Context, msg kafka.Message) error {
 
 // Documents: parse and validate front matter, get the Markdown body.
 ip, body, err := documents.ParseIntentPackage(markdown)
+rule, text, err := documents.ParseRule(markdown)   // rule.InScope(repo, changedFiles) applies its scope
 ```
 
 - `events.Validate` / `events.ValidateJSON` check an event against its schemas and return a
@@ -179,7 +185,7 @@ alongside the old one until no consumer needs it.
 The cluster targets need the stack from `platform` (`make up` there). They always use context `k3d-hotl`. They
 reuse `make port-forward` from `platform` if it is running, and otherwise port-forward for the duration of the
 command. In the registry, the envelope is `hotl/Envelope`, events are `hotl.<topic>/<Event>`, and documents
-are `hotl.documents/IntentPackage` and `hotl.documents/ReviewBrief`. Each version created carries a
+are `hotl.documents/IntentPackage`, `hotl.documents/ReviewBrief` and `hotl.documents/Rule`. Each version created carries a
 `contracts-version` label with the release that registered it.
 
 ## Versioning

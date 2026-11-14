@@ -113,3 +113,37 @@ func TestRenderBriefAndInline(t *testing.T) {
 		t.Error("an invalid default was rendered")
 	}
 }
+
+func TestFindingString(t *testing.T) {
+	f := Finding{Rule: "GO-ERR-1", RuleVersion: 1, File: "server.go", Line: 12, Severity: FindingBlocking,
+		Issue: "loadMotd returns the read error as is.", Fix: "Return fmt.Errorf(\"read motd %s: %w\", path, err)."}
+	if got := f.String(); got != `[blocking] GO-ERR-1 at server.go:12: loadMotd returns the read error as is. Fix: Return fmt.Errorf("read motd %s: %w", path, err).` {
+		t.Errorf("String() = %s", got)
+	}
+	f.Line = 0
+	if !strings.Contains(f.String(), " at server.go: ") {
+		t.Errorf("no line: %s", f)
+	}
+	if Blocking([]Finding{{Severity: FindingAdvisory}}) || !Blocking([]Finding{{Severity: FindingAdvisory}, f}) {
+		t.Error("Blocking")
+	}
+}
+
+func TestReviewTypesRoundTrip(t *testing.T) {
+	in := CheckRequest{Task: TaskSpec{ID: "T-1"}, TestReport: &TestReport{Repo: "playground", Commit: events.Commit(strings.Repeat("a", 40)),
+		Criteria: []CriterionTests{{Criterion: 1, Tests: []string{"TestVersion"}}}, Checks: []TestCheck{{Name: "test", Passed: true}},
+		Claimed: "pass", Passed: true}}
+	b, err := json.Marshal(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out CheckRequest
+	if err := json.Unmarshal(b, &out); err != nil || out.TestReport == nil || !out.TestReport.Passed || out.TestReport.Criteria[0].Tests[0] != "TestVersion" {
+		t.Errorf("round trip %s: %+v, %v", b, out, err)
+	}
+	// Requests and results recorded before these fields existed still decode.
+	var old ReviewResult
+	if err := json.Unmarshal([]byte(`{"approved":true,"comments":["ok"]}`), &old); err != nil || !old.Approved || old.Findings != nil {
+		t.Errorf("old review result: %+v, %v", old, err)
+	}
+}

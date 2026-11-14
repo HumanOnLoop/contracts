@@ -198,6 +198,8 @@ type TaskResult struct {
 	Summary string `json:"summary,omitempty"`
 	// FilesChanged lists the paths the attempt's commits changed, relative to the repo root.
 	FilesChanged []string `json:"filesChanged,omitempty"`
+	// TestReport is the tester's report, with the verified run, when the tester did the attempt (ADR 0007).
+	TestReport *TestReport `json:"testReport,omitempty"`
 }
 
 // CheckRequest asks the rule engine or the reviewer agent to evaluate an attempt's result.
@@ -207,6 +209,12 @@ type CheckRequest struct {
 	Attempt events.Attempt `json:"attempt"`
 	Branch  events.Branch  `json:"branch,omitempty"`
 	Commit  events.Commit  `json:"commit,omitempty"`
+	// TestReport is the tester's report on this commit, when a tester ran (ADR 0007). The reviewer cannot approve
+	// when its verified run failed.
+	TestReport *TestReport `json:"testReport,omitempty"`
+	// Limit is what is left of the task's and the run's budget, whichever is less; zero fields mean no limit was
+	// sent.
+	Limit Budget `json:"limit,omitzero"`
 }
 
 // RuleCheckResult is the rule engine's verdict. Hard violations fail the check; soft ones only warn.
@@ -216,10 +224,12 @@ type RuleCheckResult struct {
 	Usage      Usage                              `json:"usage,omitzero"`
 }
 
-// ReviewResult is the reviewer agent's verdict.
+// ReviewResult is the reviewer agent's verdict: approved, or changes requested with the findings. Comments are the
+// findings rendered one per line (Finding.String), for the implementer's next attempt.
 type ReviewResult struct {
 	Approved bool                `json:"approved"`
 	Comments []string            `json:"comments,omitempty"`
+	Findings []Finding           `json:"findings,omitempty"`
 	Report   *events.DocumentRef `json:"report,omitempty"`
 	Usage    Usage               `json:"usage,omitzero"`
 }
