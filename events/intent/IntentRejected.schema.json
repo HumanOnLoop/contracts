@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/IntentRejected.schema.json",
+  "title": "IntentRejected",
+  "description": "Intake rejected an intent package; the reasons go back to the developer. Topic hotl.intent; subject and key: the submission id. Producer: Intake. Main consumers: Portal (back to the developer).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Problem"
+      },
+      "description": "Every check that failed.",
+      "minItems": 1
+    }
+  },
+  "required": [
+    "reasons"
+  ]
+}

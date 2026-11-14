@@ -1,0 +1,15 @@
+{
+  "from": {
+    "kind": "person",
+    "name": "Developer, Orders team"
+  },
+  "to": {
+    "kind": "role",
+    "name": "architects"
+  },
+  "forwardedBy": "Developer, Orders team",
+  "channels": [
+    "inbox"
+  ],
+  "note": "This sets a pattern for every export."
+}

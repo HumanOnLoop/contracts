@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "rejectedBy": "Architect, Platform",
+  "briefId": "BRF-0131",
+  "reason": "Already covered by integration.read-replicas."
+}

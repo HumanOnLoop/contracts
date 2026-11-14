@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/RuleProposed.schema.json",
+  "title": "RuleProposed",
+  "description": "A person or an agent proposed a new rule or a new version of one. Topic hotl.rule; subject and key: the rule id. Producer: Portal, agent runtime. Main consumers: Review service (rule brief).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../common.schema.json#/definitions/RuleVersion"
+    },
+    "proposedBy": {
+      "$ref": "../common.schema.json#/definitions/Actor"
+    },
+    "rule": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "evaluator": {
+      "$ref": "../common.schema.json#/definitions/Evaluator"
+    },
+    "severity": {
+      "$ref": "../common.schema.json#/definitions/Severity"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why the rule is needed, for example the pattern that prompted it."
+    }
+  },
+  "required": [
+    "version",
+    "proposedBy",
+    "rule",
+    "evaluator",
+    "severity",
+    "reason"
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "repo": "orders-service",
+  "commit": "9fceb02d0ae598e95dc970b74767f19372d61af8",
+  "pipeline": "https://ci.example.com/orders-service/pipelines/8812"
+}

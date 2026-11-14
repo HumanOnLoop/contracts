@@ -1,0 +1,7 @@
+{
+  "repo": "orders-service",
+  "commit": "9fceb02d0ae598e95dc970b74767f19372d61af8",
+  "kind": "container-image",
+  "name": "registry.example.com/orders-service",
+  "version": "1.14.0"
+}

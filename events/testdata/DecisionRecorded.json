@@ -1,0 +1,8 @@
+{
+  "option": "A",
+  "text": "Note the possible lag in the export's help text.",
+  "decidedBy": "Developer, Orders team",
+  "channel": "slack",
+  "defaulted": false,
+  "changesCriteria": false
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/MainVerified.schema.json",
+  "title": "MainVerified",
+  "description": "Main is green after a merge. Topic hotl.run; subject and key: the run id. Producer: CI/CD adapter. Main consumers: Orchestrator.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    },
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit"
+    },
+    "pipeline": {
+      "$ref": "../common.schema.json#/definitions/Url"
+    }
+  },
+  "required": [
+    "repo",
+    "commit"
+  ]
+}

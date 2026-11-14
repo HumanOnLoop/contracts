@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/envelope.schema.json",
+  "title": "Envelope",
+  "description": "The envelope every HOTL event is published in: a CloudEvents 1.0 event in structured JSON mode plus the HOTL extension attributes runid, intentid and traceid (CloudEvents requires lowercase attribute names). data holds the payload, validated against the schema of the event named in type.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "specversion": {
+      "type": "string",
+      "enum": [
+        "1.0"
+      ],
+      "description": "CloudEvents version."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique event id; consumers dedupe on it. Producers in Temporal derive it deterministically so a replay never emits a duplicate."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri-reference",
+      "description": "Producing component, for example /hotl/orchestrator."
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Event name from the catalogue, <Aggregate><PastTenseVerb>, for example RunStarted."
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the fact happened (RFC 3339)."
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id of the aggregate the event is about; also the Kafka record key. Run, intent, brief or rule id; the repo for hotl.knowledge."
+    },
+    "datacontenttype": {
+      "type": "string",
+      "enum": [
+        "application/json"
+      ],
+      "description": "Content type of data."
+    },
+    "dataschema": {
+      "type": "string",
+      "format": "uri",
+      "description": "Schema of data, when the producer names it."
+    },
+    "runid": {
+      "$ref": "common.schema.json#/definitions/RunId"
+    },
+    "intentid": {
+      "$ref": "common.schema.json#/definitions/IntentId"
+    },
+    "traceid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$",
+      "description": "OpenTelemetry trace id of the run (W3C, 32 lowercase hex)."
+    },
+    "data": {
+      "type": "object",
+      "description": "Event payload; its schema is the event schema for type."
+    }
+  },
+  "required": [
+    "specversion",
+    "id",
+    "source",
+    "type",
+    "time",
+    "subject",
+    "data"
+  ]
+}

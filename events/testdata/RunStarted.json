@@ -1,0 +1,9 @@
+{
+  "intentVersion": 1,
+  "developer": "Developer, Orders team",
+  "autonomy": "L3",
+  "repos": [
+    "orders-service",
+    "gateway"
+  ]
+}

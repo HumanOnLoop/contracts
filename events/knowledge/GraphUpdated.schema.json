@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/knowledge/GraphUpdated.schema.json",
+  "title": "GraphUpdated",
+  "description": "The knowledge graph changed for a repo; caches for it are stale. Topic hotl.knowledge; subject and key: the repo. Producer: Knowledge graph. Main consumers: MCP server cache.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit"
+    },
+    "causedBy": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id of the event that caused the update."
+    },
+    "nodesChanged": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Nodes added, changed or removed."
+    }
+  },
+  "required": [
+    "causedBy",
+    "nodesChanged"
+  ]
+}

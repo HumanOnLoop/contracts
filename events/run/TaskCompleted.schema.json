@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/TaskCompleted.schema.json",
+  "title": "TaskCompleted",
+  "description": "A task passed its checks; its branch is pushed. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    },
+    "attempt": {
+      "$ref": "../common.schema.json#/definitions/Attempt"
+    },
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    },
+    "branch": {
+      "$ref": "../common.schema.json#/definitions/Branch"
+    },
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit"
+    }
+  },
+  "required": [
+    "taskId",
+    "attempt"
+  ]
+}

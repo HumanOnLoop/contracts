@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RunDelivered.schema.json",
+  "title": "RunDelivered",
+  "description": "Every task is done and main is green in every repo the run touched. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Portal (asks the PO to accept).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "result": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "merges": {
+      "type": "array",
+      "items": {
+        "description": "Main head of a repo after the run's merges.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "repo": {
+            "$ref": "../common.schema.json#/definitions/Repo"
+          },
+          "commit": {
+            "$ref": "../common.schema.json#/definitions/Commit"
+          }
+        },
+        "required": [
+          "repo",
+          "commit"
+        ]
+      },
+      "description": "Head of main in each repo the run touched.",
+      "minItems": 1
+    }
+  },
+  "required": [
+    "result",
+    "merges"
+  ]
+}

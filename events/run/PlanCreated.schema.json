@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/PlanCreated.schema.json",
+  "title": "PlanCreated",
+  "description": "The planner produced a plan, or a new plan after a re-plan. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Portal (L1 plan review).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "planVersion": {
+      "$ref": "../common.schema.json#/definitions/PlanVersion"
+    },
+    "plan": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "taskCount": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of tasks in the plan."
+    },
+    "needsApproval": {
+      "type": "boolean",
+      "description": "True at autonomy L1: the run waits for the developer to approve the plan."
+    }
+  },
+  "required": [
+    "planVersion",
+    "plan",
+    "taskCount",
+    "needsApproval"
+  ]
+}

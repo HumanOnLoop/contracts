@@ -1,0 +1,14 @@
+{
+  "from": {
+    "kind": "role",
+    "name": "architects"
+  },
+  "to": {
+    "kind": "person",
+    "name": "Backup architect"
+  },
+  "reason": "deadline",
+  "channels": [
+    "email"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "submissionId": "5f0c6e6a-8a59-4c0c-9a39-0d6b8b3f2b11",
+  "package": {
+    "uri": "https://portal.hotl.example/intents/INT-0042/v1.md",
+    "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+  },
+  "po": "Product owner, Orders",
+  "developer": "Developer, Orders team"
+}

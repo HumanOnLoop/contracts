@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/TaskStarted.schema.json",
+  "title": "TaskStarted",
+  "description": "An agent started an attempt at a task. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Observability.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    },
+    "attempt": {
+      "$ref": "../common.schema.json#/definitions/Attempt"
+    },
+    "role": {
+      "$ref": "../common.schema.json#/definitions/AgentRole"
+    },
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    }
+  },
+  "required": [
+    "taskId",
+    "attempt",
+    "role"
+  ]
+}

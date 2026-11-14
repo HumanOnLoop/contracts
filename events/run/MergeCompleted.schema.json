@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/MergeCompleted.schema.json",
+  "title": "MergeCompleted",
+  "description": "A run branch was merged to main. Topic hotl.run; subject and key: the run id. Producer: CI/CD adapter. Main consumers: Harvesters, orchestrator.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    },
+    "branch": {
+      "$ref": "../common.schema.json#/definitions/Branch"
+    },
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit"
+    },
+    "pullRequest": {
+      "$ref": "../common.schema.json#/definitions/Url"
+    }
+  },
+  "required": [
+    "repo",
+    "branch",
+    "commit"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/RuleRetired.schema.json",
+  "title": "RuleRetired",
+  "description": "A rule stopped applying: superseded or no longer matching the code. It stays in history. Topic hotl.rule; subject and key: the rule id. Producer: Rule engine. Main consumers: Knowledge graph, MCP server cache.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../common.schema.json#/definitions/RuleVersion"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why it was retired."
+    },
+    "supersededBy": {
+      "$ref": "../common.schema.json#/definitions/RuleId"
+    }
+  },
+  "required": [
+    "version",
+    "reason"
+  ]
+}

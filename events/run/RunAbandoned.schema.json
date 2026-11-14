@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RunAbandoned.schema.json",
+  "title": "RunAbandoned",
+  "description": "A run ended without delivery. Changes already merged stay in place. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cause": {
+      "type": "string",
+      "enum": [
+        "aborted",
+        "scope"
+      ],
+      "description": "aborted: the developer aborted; scope: abandoned on a scope brief's decision."
+    },
+    "abandonedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why, in one sentence."
+    }
+  },
+  "required": [
+    "cause",
+    "reason"
+  ]
+}

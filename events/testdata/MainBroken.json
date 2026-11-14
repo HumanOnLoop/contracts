@@ -1,0 +1,6 @@
+{
+  "repo": "gateway",
+  "commit": "9fceb02d0ae598e95dc970b74767f19372d61af8",
+  "pipeline": "https://ci.example.com/gateway/pipelines/4410",
+  "summary": "Contract test for /admin/orders/export failed."
+}

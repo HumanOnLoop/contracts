@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/ArtifactPublished.schema.json",
+  "title": "ArtifactPublished",
+  "description": "A publish step made a merged change available: a module release, schema registration or image push. Topic hotl.run; subject and key: the run id. Producer: CI/CD adapter. Main consumers: Orchestrator (next merge step).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    },
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit"
+    },
+    "kind": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What was published, for example go-module, container-image or schema."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Artifact name, for example github.com/osbe/contracts."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Published version, for example v0.1.0."
+    }
+  },
+  "required": [
+    "repo",
+    "commit",
+    "kind",
+    "name",
+    "version"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/TaskChecked.schema.json",
+  "title": "TaskChecked",
+  "description": "The rule engine and a reviewer agent evaluated a task attempt's result. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Knowledge graph, rule engine stats.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    },
+    "attempt": {
+      "$ref": "../common.schema.json#/definitions/Attempt"
+    },
+    "passed": {
+      "type": "boolean",
+      "description": "True when every hard rule passed and the reviewer approved."
+    },
+    "reviewerApproved": {
+      "type": "boolean",
+      "description": "Whether the reviewer agent approved."
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "description": "A rule the result violated.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ruleId": {
+            "$ref": "../common.schema.json#/definitions/RuleId"
+          },
+          "ruleVersion": {
+            "$ref": "../common.schema.json#/definitions/RuleVersion"
+          },
+          "severity": {
+            "$ref": "../common.schema.json#/definitions/Severity"
+          }
+        },
+        "required": [
+          "ruleId",
+          "ruleVersion",
+          "severity"
+        ]
+      },
+      "description": "Rules the result violated, hard and soft."
+    },
+    "report": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    }
+  },
+  "required": [
+    "taskId",
+    "attempt",
+    "passed",
+    "reviewerApproved",
+    "violations"
+  ]
+}

@@ -1,0 +1,281 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/common.schema.json",
+  "title": "Common",
+  "description": "Definitions shared by the HOTL event and document schemas. Not an event itself. Identifier formats are owned by the service that assigns them, so ids are plain non-empty strings here: the registry treats any pattern change as breaking, so only formats fixed by a standard carry a pattern.",
+  "definitions": {
+    "IntentId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Intent id assigned by intake, for example INT-0042."
+    },
+    "IntentVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the signed intent package: 1 at the first sign-off, one more per re-signed version."
+    },
+    "RunId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Run id, for example RUN-0042-1; also the Temporal workflow id."
+    },
+    "TaskId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Task id, unique within its run, for example T-7."
+    },
+    "BriefId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Review brief id assigned by the review service, for example BRF-0107."
+    },
+    "RuleId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Rule id, stable across the rule's versions."
+    },
+    "RuleVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of a rule; 1 for its first version."
+    },
+    "PlanVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of a run's plan; 1 for the first plan, one more per re-plan."
+    },
+    "Attempt": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Attempt number of a task; 1 for the first attempt."
+    },
+    "Repo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repository name as connected to HOTL, for example orders-service."
+    },
+    "Branch": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Git branch name, for example run/RUN-0042-1."
+    },
+    "Commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$",
+      "description": "Full git commit id (SHA-1 or SHA-256, lowercase hex)."
+    },
+    "Url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Absolute URL."
+    },
+    "Person": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A person known to HOTL, as named in intent packages and review briefs."
+    },
+    "AgentRole": {
+      "type": "string",
+      "enum": [
+        "planner",
+        "implementer",
+        "tester",
+        "reviewer",
+        "integrator"
+      ],
+      "description": "Role of a HOTL agent."
+    },
+    "Actor": {
+      "description": "Who did something: a person or an agent.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "person",
+            "agent"
+          ],
+          "description": "Whether a person or an agent acted."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Person name, or agent role when kind is agent."
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ]
+    },
+    "Autonomy": {
+      "type": "string",
+      "enum": [
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "description": "Autonomy level: L1 propose, L2 act with veto window, L3 act and inform."
+    },
+    "DocumentRef": {
+      "description": "Reference to an immutable document (intent package, plan, review brief, rule, report). Events reference documents instead of copying them in; the digest pins the exact content.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri-reference",
+          "description": "Where the document is stored."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the document's exact bytes, lowercase hex."
+        }
+      },
+      "required": [
+        "uri",
+        "sha256"
+      ]
+    },
+    "Problem": {
+      "description": "One reason a document was rejected.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "part": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The part that failed its check: a front matter field or section name."
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What is wrong, written for the person who has to fix it."
+        }
+      },
+      "required": [
+        "part",
+        "message"
+      ]
+    },
+    "BriefCategory": {
+      "type": "string",
+      "enum": [
+        "implementation",
+        "budget",
+        "rule",
+        "scope"
+      ],
+      "description": "Review brief category; decides routing and the default at the deadline."
+    },
+    "Urgency": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high"
+      ],
+      "description": "Urgency of a review brief."
+    },
+    "Recipient": {
+      "description": "Who a brief is routed to.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "role",
+            "person",
+            "group"
+          ],
+          "description": "What kind of recipient name is."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Role, person or group name, for example architects."
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ]
+    },
+    "Channel": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Delivery channel, for example portal, slack, teams, email or inbox."
+    },
+    "Severity": {
+      "type": "string",
+      "enum": [
+        "hard",
+        "soft"
+      ],
+      "description": "Hard rules block; soft rules warn."
+    },
+    "Evaluator": {
+      "type": "string",
+      "enum": [
+        "rego",
+        "archtest",
+        "llm"
+      ],
+      "description": "How a rule is evaluated."
+    },
+    "RuleScope": {
+      "description": "Where a rule applies. Every listed dimension must match; an absent dimension matches everything.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Repo"
+          },
+          "description": "Repos the rule applies to; empty or absent means all.",
+          "uniqueItems": true
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Services the rule applies to.",
+          "uniqueItems": true
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Architecture layers the rule applies to.",
+          "uniqueItems": true
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "File glob patterns the rule applies to.",
+          "uniqueItems": true
+        }
+      },
+      "required": []
+    },
+    "Budget": {
+      "type": "string",
+      "enum": [
+        "tokens",
+        "time"
+      ],
+      "description": "Kind of budget: tokens, or wall-clock seconds."
+    }
+  }
+}

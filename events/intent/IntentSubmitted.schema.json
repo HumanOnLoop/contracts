@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/IntentSubmitted.schema.json",
+  "title": "IntentSubmitted",
+  "description": "A developer submitted an intent package for validation. Topic hotl.intent; subject and key: the submission id (intake has not assigned an intent id yet). Producer: Portal. Main consumers: Intake.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "submittedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "package": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    }
+  },
+  "required": [
+    "submittedBy",
+    "package"
+  ]
+}

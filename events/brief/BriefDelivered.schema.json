@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/brief/BriefDelivered.schema.json",
+  "title": "BriefDelivered",
+  "description": "The review service accepted a brief, assigned its id and routed it. Topic hotl.brief; subject and key: the brief id. Producer: Review service. Main consumers: Channel adapters.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Subject of the BriefRaised event this brief came from."
+    },
+    "category": {
+      "$ref": "../common.schema.json#/definitions/BriefCategory"
+    },
+    "to": {
+      "$ref": "../common.schema.json#/definitions/Recipient"
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Channel"
+      },
+      "description": "Channels to deliver on; the portal always shows it too.",
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the default applies (RFC 3339)."
+    },
+    "brief": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    }
+  },
+  "required": [
+    "requestId",
+    "category",
+    "to",
+    "channels",
+    "deadline",
+    "brief"
+  ]
+}

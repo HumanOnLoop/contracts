@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/brief/BriefWithdrawn.schema.json",
+  "title": "BriefWithdrawn",
+  "description": "An agent withdrew a brief it no longer needs. Recorded, but creates no decision. Topic hotl.brief; subject and key: the brief id. Producer: Agent runtime. Main consumers: Review service.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "withdrawnBy": {
+      "$ref": "../common.schema.json#/definitions/AgentRole"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why the brief is no longer needed."
+    }
+  },
+  "required": [
+    "withdrawnBy",
+    "reason"
+  ]
+}

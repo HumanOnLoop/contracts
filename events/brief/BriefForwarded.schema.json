@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/brief/BriefForwarded.schema.json",
+  "title": "BriefForwarded",
+  "description": "A recipient forwarded a brief to another role; it keeps its id and history. Topic hotl.brief; subject and key: the brief id. Producer: Review service. Main consumers: Channel adapters.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from": {
+      "$ref": "../common.schema.json#/definitions/Recipient"
+    },
+    "to": {
+      "$ref": "../common.schema.json#/definitions/Recipient"
+    },
+    "forwardedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Channel"
+      },
+      "description": "Channels to deliver on.",
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Note from the person forwarding."
+    }
+  },
+  "required": [
+    "from",
+    "to",
+    "forwardedBy",
+    "channels"
+  ]
+}

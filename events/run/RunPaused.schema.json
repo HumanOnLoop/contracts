@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RunPaused.schema.json",
+  "title": "RunPaused",
+  "description": "A run paused: the developer paused it, or every remaining task is blocked on a brief. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Portal.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reason": {
+      "type": "string",
+      "enum": [
+        "developer",
+        "blocked"
+      ],
+      "description": "developer: paused by the developer; blocked: every remaining task waits on a brief."
+    },
+    "pausedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "briefIds": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/BriefId"
+      },
+      "description": "Briefs the run waits on, when blocked.",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "reason"
+  ]
+}

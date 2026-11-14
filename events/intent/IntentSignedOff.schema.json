@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/IntentSignedOff.schema.json",
+  "title": "IntentSignedOff",
+  "description": "The PO signed off an intent package; from now on it is immutable. Topic hotl.intent; subject and key: the intent id. Producer: Portal. Main consumers: Orchestrator (starts the run).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../common.schema.json#/definitions/IntentVersion"
+    },
+    "signedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "package": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Repo"
+      },
+      "description": "Target repos from the package.",
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "autonomy": {
+      "$ref": "../common.schema.json#/definitions/Autonomy"
+    }
+  },
+  "required": [
+    "version",
+    "signedBy",
+    "package",
+    "repos",
+    "autonomy"
+  ]
+}

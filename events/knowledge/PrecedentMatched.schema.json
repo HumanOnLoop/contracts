@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/knowledge/PrecedentMatched.schema.json",
+  "title": "PrecedentMatched",
+  "description": "An agent found a close precedent and acted on it instead of raising a brief. Topic hotl.knowledge; subject and key: the repo. Producer: MCP server. Main consumers: Observability (briefs avoided).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "precedent": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    },
+    "similarity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Similarity score of the match, 0 to 1."
+    },
+    "agent": {
+      "$ref": "../common.schema.json#/definitions/AgentRole"
+    },
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    }
+  },
+  "required": [
+    "precedent",
+    "similarity",
+    "agent"
+  ]
+}

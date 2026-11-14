@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/brief/BriefRejected.schema.json",
+  "title": "BriefRejected",
+  "description": "The review service sent a brief back to its agent because it failed a check; no human saw it. Topic hotl.brief; subject and key: the raise's request id. Producer: Review service. Main consumers: Agent runtime.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "reasons": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Problem"
+      },
+      "description": "Every check that failed.",
+      "minItems": 1
+    }
+  },
+  "required": [
+    "reasons"
+  ]
+}

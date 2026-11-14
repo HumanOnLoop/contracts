@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/documents/review-brief.schema.json",
+  "title": "ReviewBrief",
+  "description": "Front matter of a review brief (docs/design: HOTL — Review Brief Template). The review service assigns id and resolves to before it validates a brief against this schema. Checks that need HOTL's state (the run is active, the intent version is the signed one, the deadline is in the future and within the category's maximum, blocked tasks belong to the run) are the review service's, not the schema's.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Brief id assigned by the review service, for example BRF-0107; never set by the agent."
+    },
+    "run": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Run id, for example RUN-0042-1."
+    },
+    "intent": {
+      "type": "string",
+      "pattern": "^\\S+ v[1-9][0-9]*$",
+      "description": "Intent id and version, for example INT-0042 v1."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["implementation", "budget", "rule", "scope"],
+      "description": "Decides who gets the brief and what happens at the deadline."
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Recipient resolved by routing: a role, person or group."
+    },
+    "raised_by": {
+      "type": "string",
+      "enum": ["planner", "implementer", "tester", "reviewer", "integrator"],
+      "description": "Role of the agent that raised the brief."
+    },
+    "urgency": {
+      "type": "string",
+      "enum": ["low", "normal", "high"]
+    },
+    "deadline": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}$",
+      "description": "YYYY-MM-DDTHH:MM in the recipient's local time."
+    },
+    "default": {
+      "type": "string",
+      "pattern": "^([A-Z]|pause)$",
+      "description": "Option id applied at the deadline, or pause. Only implementation briefs may carry an option."
+    },
+    "blocks": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Task ids paused while waiting; may be empty."
+    }
+  },
+  "required": ["id", "run", "intent", "category", "to", "raised_by", "urgency", "deadline", "default", "blocks"],
+  "if": {
+    "properties": {
+      "category": {
+        "enum": ["budget", "rule", "scope"]
+      }
+    },
+    "required": ["category"]
+  },
+  "then": {
+    "properties": {
+      "default": {
+        "enum": ["pause"]
+      }
+    }
+  }
+}

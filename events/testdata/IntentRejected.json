@@ -1,0 +1,12 @@
+{
+  "reasons": [
+    {
+      "part": "title",
+      "message": "Title is 92 characters; keep it under 80."
+    },
+    {
+      "part": "Acceptance criteria",
+      "message": "Add at least one testable criterion."
+    }
+  ]
+}

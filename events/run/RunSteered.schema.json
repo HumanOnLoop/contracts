@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RunSteered.schema.json",
+  "title": "RunSteered",
+  "description": "The developer changed something in a running run. Every steer is an intervention: a sign the system fell short. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Knowledge graph (intervention), rule engine (candidate rules).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "steeredBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "target": {
+      "type": "string",
+      "enum": [
+        "plan",
+        "task",
+        "agent",
+        "budget",
+        "autonomy",
+        "code"
+      ],
+      "description": "What was changed."
+    },
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    },
+    "change": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What changed, in one sentence."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why, in one sentence."
+    },
+    "ruleIds": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/RuleId"
+      },
+      "description": "Rules involved, if any.",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "steeredBy",
+    "target",
+    "change",
+    "reason"
+  ]
+}

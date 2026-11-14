@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/IntentValidated.schema.json",
+  "title": "IntentValidated",
+  "description": "Intake accepted an intent package and assigned its id; it now waits for the PO's sign-off. Topic hotl.intent; subject and key: the intent id intake assigned. Producer: Intake. Main consumers: Portal (asks the PO to sign).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "submissionId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Subject of the IntentSubmitted event this answers."
+    },
+    "package": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "po": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "developer": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    }
+  },
+  "required": [
+    "submissionId",
+    "package",
+    "po",
+    "developer"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RunStarted.schema.json",
+  "title": "RunStarted",
+  "description": "A run started for a signed intent. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "intentVersion": {
+      "$ref": "../common.schema.json#/definitions/IntentVersion"
+    },
+    "developer": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "autonomy": {
+      "$ref": "../common.schema.json#/definitions/Autonomy"
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Repo"
+      },
+      "description": "Repos the run may change.",
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "intentVersion",
+    "developer",
+    "autonomy",
+    "repos"
+  ]
+}

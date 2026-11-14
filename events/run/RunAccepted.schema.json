@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RunAccepted.schema.json",
+  "title": "RunAccepted",
+  "description": "The PO accepted the delivered feature against the intent's criteria. Topic hotl.run; subject and key: the run id. Producer: Portal. Main consumers: Knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "acceptedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "intentVersion": {
+      "$ref": "../common.schema.json#/definitions/IntentVersion"
+    }
+  },
+  "required": [
+    "acceptedBy",
+    "intentVersion"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/knowledge/RepoHarvested.schema.json",
+  "title": "RepoHarvested",
+  "description": "A harvester parsed a repo at a commit; the knowledge graph loads the result. Topic hotl.knowledge; subject and key: the repo. Producer: Harvesters. Main consumers: Knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "incremental",
+        "full"
+      ],
+      "description": "incremental: on a merge; full: a rebuild."
+    },
+    "harvester": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Which harvester ran, for example go-code or adr."
+    },
+    "result": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    }
+  },
+  "required": [
+    "commit",
+    "mode",
+    "harvester",
+    "result"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/documents/intent-package.schema.json",
+  "title": "IntentPackage",
+  "description": "Front matter of an intent package (docs/design: HOTL — Intent Package Template). Intake assigns id before it validates a package against this schema. Checks that need HOTL's state (known people, connected repos, a due date in the future, a source link that resolves) are intake's, not the schema's.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Intent id assigned by intake, for example INT-0042; never set by hand."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 79,
+      "description": "Short name of the feature, under 80 characters."
+    },
+    "po": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Product owner: a known person with the PO role."
+    },
+    "developer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Developer who runs it: a known person with the developer role; the default brief recipient."
+    },
+    "repos": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Target repos; each must be connected to HOTL and harvested."
+    },
+    "autonomy": {
+      "type": "string",
+      "enum": [
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "description": "L1 agent proposes, human approves; L2 agent acts, human can veto; L3 agents merge to main once all gates pass."
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Priority, from the PO."
+    },
+    "due": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Due date, YYYY-MM-DD; optional. Intake checks it is a real date in the future."
+    },
+    "source": {
+      "type": "string",
+      "format": "uri",
+      "description": "Link to the PO's original request; optional."
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "po",
+    "developer",
+    "repos",
+    "autonomy",
+    "priority"
+  ]
+}

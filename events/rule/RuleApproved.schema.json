@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/RuleApproved.schema.json",
+  "title": "RuleApproved",
+  "description": "The rule's owning role approved a proposed rule version. Topic hotl.rule; subject and key: the rule id. Producer: Review service. Main consumers: Rule engine.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../common.schema.json#/definitions/RuleVersion"
+    },
+    "approvedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    },
+    "shadowUntil": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End of the shadow period; absent to enforce at once."
+    }
+  },
+  "required": [
+    "version",
+    "approvedBy",
+    "briefId"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RunResumed.schema.json",
+  "title": "RunResumed",
+  "description": "A paused run resumed. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Portal.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "resumedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    }
+  },
+  "required": []
+}

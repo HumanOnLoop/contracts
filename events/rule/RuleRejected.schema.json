@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/RuleRejected.schema.json",
+  "title": "RuleRejected",
+  "description": "The rule's owning role rejected a proposed rule version. Topic hotl.rule; subject and key: the rule id. Producer: Review service. Main consumers: Knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../common.schema.json#/definitions/RuleVersion"
+    },
+    "rejectedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why it was rejected."
+    }
+  },
+  "required": [
+    "version",
+    "rejectedBy",
+    "briefId",
+    "reason"
+  ]
+}

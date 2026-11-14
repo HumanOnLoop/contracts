@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/brief/DecisionRecorded.schema.json",
+  "title": "DecisionRecorded",
+  "description": "A brief was answered, from whichever channel answered first, or its default applied at the deadline. Topic hotl.brief; subject and key: the brief id. Producer: Review service. Main consumers: Orchestrator (signal), knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "option": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Chosen option id, for example A. Absent for a free-text answer."
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Free-text answer or note from the reviewer."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The reviewer's reason, if given."
+    },
+    "decidedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "channel": {
+      "$ref": "../common.schema.json#/definitions/Channel"
+    },
+    "defaulted": {
+      "type": "boolean",
+      "description": "True when no one answered and the brief's default option applied at the deadline."
+    },
+    "changesCriteria": {
+      "type": "boolean",
+      "description": "True when the answer changes the acceptance criteria, so a new intent version needs the PO's signature."
+    }
+  },
+  "required": [
+    "defaulted",
+    "changesCriteria"
+  ]
+}

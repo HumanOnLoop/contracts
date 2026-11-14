@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/BranchPushed.schema.json",
+  "title": "BranchPushed",
+  "description": "A run branch was pushed to a repo. Topic hotl.run; subject and key: the run id. Producer: CI/CD adapter. Main consumers: Reviewer and auditor agents.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    },
+    "branch": {
+      "$ref": "../common.schema.json#/definitions/Branch"
+    },
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit"
+    },
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    }
+  },
+  "required": [
+    "repo",
+    "branch",
+    "commit"
+  ]
+}

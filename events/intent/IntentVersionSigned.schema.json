@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/IntentVersionSigned.schema.json",
+  "title": "IntentVersionSigned",
+  "description": "The PO re-signed a new version of an intent whose acceptance criteria changed during a run. Topic hotl.intent; subject and key: the intent id. Producer: Portal. Main consumers: Orchestrator (signal), knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../common.schema.json#/definitions/IntentVersion"
+    },
+    "signedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "package": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    }
+  },
+  "required": [
+    "version",
+    "signedBy",
+    "package"
+  ]
+}

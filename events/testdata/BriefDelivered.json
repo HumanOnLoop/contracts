@@ -1,0 +1,17 @@
+{
+  "requestId": "0b8e3c1e-2f4d-4c55-9a8e-7d1f2a3b4c5d",
+  "category": "implementation",
+  "to": {
+    "kind": "person",
+    "name": "Developer, Orders team"
+  },
+  "channels": [
+    "slack",
+    "portal"
+  ],
+  "deadline": "2026-11-16T15:00:00+01:00",
+  "brief": {
+    "uri": "https://portal.hotl.example/intents/INT-0042/v1.md",
+    "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+  }
+}

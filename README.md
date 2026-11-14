@@ -1,6 +1,180 @@
 # contracts
 
-Part of HOTL (Human On The Loop). Event JSON Schemas, intent package and review brief schemas, MCP tool definitions. Versioned; every service depends on it.
+Part of HOTL (Human On The Loop). The schemas every HOTL service shares, and the Go library generated from them:
+
+- the **event envelope** and a schema for each of the **39 events** in the catalogue, one directory per topic;
+- the **front matter** of intent packages and review briefs;
+- a Go module, `github.com/osbe/contracts`, with generated types and helpers to build, validate, produce and
+  consume events.
+
+The schemas are the source of truth. Change a schema, run `make generate`, commit both. MCP tool definitions
+will live in `mcp/` (not written yet).
+
+Why it is built this way (generator, Kafka client, versioning): [ADR 0002](../docs/adr/0002-contracts-schemas-library-and-versioning.md).
+
+## Layout
+
+| Path | What |
+| --- | --- |
+| `events/envelope.schema.json` | The CloudEvents envelope every event travels in |
+| `events/common.schema.json` | Shared definitions (ids, document references, enums). Not an event |
+| `events/<topic>/<Event>.schema.json` | One payload schema per event; the directory is the topic (`run` → `hotl.run`) |
+| `events/testdata/<Event>.json` | A valid example payload for every event, checked by the tests |
+| `documents/*.schema.json` | Intent package and review brief front matter |
+| `documents/testdata/` | The worked examples from the template docs, verbatim |
+| `events`, `documents`, `kafka` | Go packages (`*_gen.go` is generated, never edit it) |
+| `internal/` | Schema compiler and bundler, the compatibility checker, the registry client, code generators |
+
+## Events
+
+Every event is a CloudEvents 1.0 event in **structured JSON mode**: the Kafka record value is the whole envelope,
+with header `content-type: application/cloudevents+json; charset=UTF-8`.
+
+```json
+{
+  "specversion": "1.0",
+  "id": "9b2f0c5e-6f1a-4c43-8f0e-2d4c1b7a9e10",
+  "source": "/hotl/orchestrator",
+  "type": "RunStarted",
+  "time": "2026-11-14T09:00:00Z",
+  "subject": "RUN-0042-1",
+  "datacontenttype": "application/json",
+  "runid": "RUN-0042-1",
+  "intentid": "INT-0042",
+  "traceid": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "data": { "intentVersion": 1, "developer": "Developer, Orders team", "autonomy": "L3", "repos": ["orders-service"] }
+}
+```
+
+- **Extension attributes are `runid`, `intentid` and `traceid`**, all lowercase. The design calls them runId,
+  intentId and traceId, but CloudEvents only allows lowercase letters and digits in attribute names. In Go they
+  are `RunID`, `IntentID` and `TraceID`.
+- **`subject` is the aggregate id and the Kafka key**: the run, intent, brief or rule id, or the repo for
+  `hotl.knowledge`. Two kinds of event come before an id exists. `IntentSubmitted` and `IntentRejected` use the
+  submission id, because intake assigns intent ids. `BriefRaised` and `BriefRejected` use the agent's request id,
+  because the review service assigns brief ids. `IntentValidated` and `BriefDelivered` then carry that
+  submission or request id, so the two can be matched up.
+- **Payloads are minimal**: ids, state, and the facts a consumer acts on. They don't repeat what the envelope
+  already carries (subject, run, intent). Documents (intent packages, plans, briefs, rules, reports) are never
+  copied in. A `DocumentRef` (`uri` + `sha256`) points at the exact immutable content.
+- **Identifier formats are not constrained** (`RUN-0042-1` is a plain non-empty string). The registry treats any
+  pattern change as breaking, even a looser one, so only formats fixed by a standard carry a pattern: git commit
+  ids, SHA-256 digests and W3C trace ids. The service that assigns an id checks its format.
+
+| Topic | Events |
+| --- | --- |
+| `hotl.intent` | IntentSubmitted, IntentValidated, IntentRejected, IntentSignedOff, IntentVersionSigned |
+| `hotl.run` | RunStarted, PlanCreated, PlanApproved, TaskStarted, TaskChecked, TaskCompleted, TaskFailed, BranchPushed, MergeCompleted, ArtifactPublished, MainVerified, MainBroken, BudgetExceeded, RunPaused, RunResumed, RunSteered, RunDelivered, RunAccepted, RunAbandoned |
+| `hotl.brief` | BriefRaised, BriefRejected, BriefDelivered, BriefForwarded, BriefEscalated, BriefWithdrawn, DecisionRecorded |
+| `hotl.rule` | RuleProposed, RuleApproved, RuleRejected, RuleActivated, RuleRetired |
+| `hotl.knowledge` | RepoHarvested, GraphUpdated, PrecedentMatched |
+
+Each schema's description names its producer, main consumers and subject; the design's
+[event catalogue](../docs/design/HOTL%20—%20Run%20State%20Machine%20and%20Event%20Catalogue.md) has the full picture.
+
+## Using the Go library
+
+```go
+import (
+	"github.com/osbe/contracts/documents"
+	"github.com/osbe/contracts/events"
+	"github.com/osbe/contracts/kafka"
+)
+
+// Build: New fills in specversion, id, time and type, and validates against both schemas.
+env, err := events.New(events.RunStarted{
+	IntentVersion: 1, Developer: "Developer, Orders team",
+	Autonomy: events.AutonomyL3, Repos: []events.Repo{"orders-service"},
+}, events.Meta{Source: "/hotl/orchestrator", Subject: "RUN-0042-1", RunID: "RUN-0042-1", IntentID: "INT-0042"})
+
+// Produce: validates again, keys by subject, waits for acks.
+p, err := kafka.NewProducer([]string{"localhost:19092"})
+err = p.Publish(ctx, env)
+
+// Consume: at least once; offsets are committed after the handler returns nil. Dedupe on msg.ID.
+c, err := kafka.NewConsumer([]string{"localhost:19092"}, "orchestrator", []string{events.TopicRun, events.TopicBrief})
+err = c.Run(ctx, func(ctx context.Context, msg kafka.Message) error {
+	payload, err := msg.Decode()    // *events.RunStarted, *events.DecisionRecorded, ...
+	if errors.Is(err, events.ErrUnknownType) {
+		return nil                  // a newer producer's event type; not ours to handle
+	}
+	...
+})
+
+// Documents: parse and validate front matter, get the Markdown body.
+ip, body, err := documents.ParseIntentPackage(markdown)
+```
+
+- `events.Validate` / `events.ValidateJSON` check an event against its schemas and return a
+  `*events.ValidationError` that lists every problem with a JSON pointer.
+- In Temporal workflows, set `Meta.ID` to a deterministic id so a replayed workflow never emits a duplicate.
+- Producers outside Temporal write envelopes to an outbox and relay them with `kafka.NewRecord`.
+- **Producers validate; consumers are tolerant readers.** Decoding ignores unknown properties and keeps enum
+  values it doesn't know, so a consumer keeps working when a producer moves to a newer contracts release first.
+  `Required` arrays must be non-nil (`[]` not `null`); `New` tells you if one is.
+
+## Changing a schema
+
+Changes must be **backward compatible**: the new schema accepts every event the old one accepted, because the
+topics keep events forever and consumers replay them. Two checks enforce this:
+
+1. `go test ./...` compares every schema with the last release tag (`v*`). It fails on an incompatible change,
+   and on a released schema that was removed. This is `internal/compat`, which follows the registry's rules.
+2. `make register` has the registry check each new version under its BACKWARD rule before storing it.
+
+| Allowed | Not allowed |
+| --- | --- |
+| Add an optional property | Add a required property, or make an optional one required |
+| Add an enum value | Remove or rename a property, or an enum value |
+| Add a new event (a new file) | Change a type, or add or change a pattern, format or const |
+| Relax a bound (`maxLength` up, `minimum` down) | Tighten a bound, or add one |
+| Edit descriptions and titles | Drop a property from `required` (HOTL rule: old consumers rely on it) |
+
+Rules every schema follows (checked by `internal/schema` tests):
+
+- **draft-07** (`"$schema": "http://json-schema.org/draft-07/schema#"`). Apicurio 3.3's compatibility checker
+  rejects draft 2019-09 and 2020-12 schemas with "could not determine version".
+- **`"additionalProperties": false` on every object.** With an open content model the registry calls *adding* an
+  optional property breaking, which would rule out the one change we make most.
+- `$id` is `https://github.com/osbe/contracts/<path>`. A file shares definitions only by `$ref` into
+  `events/common.schema.json#/definitions/<Name>`. Registration bundles them into each schema, so registered
+  schemas stand alone.
+- Event schemas: `title` equals the file name, and `description` names the producer, consumers and subject.
+
+A change you can't make compatibly is a **new event** (for example `RunStartedV2` next to `RunStarted`), produced
+alongside the old one until no consumer needs it.
+
+## Make targets
+
+| Target | Does |
+| --- | --- |
+| `make test` | Unit tests, including the compatibility check against the last release |
+| `make lint` | `go vet` and a check that generated code is up to date |
+| `make generate` | Regenerate `events/types_gen.go`, `events/catalog_gen.go`, `documents/types_gen.go` |
+| `make register` | Register every schema in Apicurio on `k3d-hotl`, setting COMPATIBILITY=BACKWARD and VALIDITY=FULL on each artifact |
+| `make check-registry` | Dry-run every schema against the registry's latest version (stores nothing) |
+| `make test-kafka` | Produce and consume through Kafka on `k3d-hotl`, on temporary topics it deletes afterwards |
+
+The cluster targets need the stack from `platform` (`make up` there). They always use context `k3d-hotl`. They
+reuse `make port-forward` from `platform` if it is running, and otherwise port-forward for the duration of the
+command. In the registry, the envelope is `hotl/Envelope`, events are `hotl.<topic>/<Event>`, and documents
+are `hotl.documents/IntentPackage` and `hotl.documents/ReviewBrief`. Each version created carries a
+`contracts-version` label with the release that registered it.
+
+## Versioning
+
+The module follows semantic versioning with tags `vMAJOR.MINOR.PATCH`. Adding events, optional properties or
+enum values is a minor release. Fixes to docs or the library are patch releases. Compatibility is enforced from
+v0.1.0 on, even before 1.0: retained topics don't care about semver. Registry versions are numbered per artifact
+by the registry (1, 2, ...) and only grow when that schema's content changes. See ADR 0002.
+
+## Dependencies
+
+Go 1.27. Runtime dependencies, each approved: [franz-go](https://github.com/twmb/franz-go) (Kafka client),
+[santhosh-tekuri/jsonschema](https://github.com/santhosh-tekuri/jsonschema) v6 (validation, with
+`golang.org/x/text` for its messages) and [go.yaml.in/yaml/v3](https://github.com/yaml/go-yaml) (front matter).
+The code generator, [go-jsonschema](https://github.com/atombender/go-jsonschema), runs through `go run` at a
+pinned version and is not a module dependency.
 
 ## Design references
 

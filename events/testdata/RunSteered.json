@@ -1,0 +1,7 @@
+{
+  "steeredBy": "Developer, Orders team",
+  "target": "task",
+  "taskId": "T-8",
+  "change": "Pointed the tester at the existing PDF export fixtures.",
+  "reason": "The tester was generating order data from scratch."
+}

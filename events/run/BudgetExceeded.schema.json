@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/BudgetExceeded.schema.json",
+  "title": "BudgetExceeded",
+  "description": "A run or task used up a budget; the affected work pauses. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Review service.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "budget": {
+      "$ref": "../common.schema.json#/definitions/Budget"
+    },
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The budget, in tokens or seconds."
+    },
+    "used": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Amount used, in tokens or seconds."
+    }
+  },
+  "required": [
+    "budget",
+    "limit",
+    "used"
+  ]
+}

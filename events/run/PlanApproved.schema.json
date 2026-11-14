@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/PlanApproved.schema.json",
+  "title": "PlanApproved",
+  "description": "A plan was approved, by the developer at L1 or automatically at L2 and L3. Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Knowledge graph.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "planVersion": {
+      "$ref": "../common.schema.json#/definitions/PlanVersion"
+    },
+    "approvedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    }
+  },
+  "required": [
+    "planVersion"
+  ]
+}

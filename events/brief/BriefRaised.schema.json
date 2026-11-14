@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/brief/BriefRaised.schema.json",
+  "title": "BriefRaised",
+  "description": "An agent raised a review brief. Topic hotl.brief; subject and key: the raise's request id (the review service assigns the brief id). Producer: Agent runtime. Main consumers: Review service.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "$ref": "../common.schema.json#/definitions/BriefCategory"
+    },
+    "raisedBy": {
+      "$ref": "../common.schema.json#/definitions/AgentRole"
+    },
+    "taskId": {
+      "$ref": "../common.schema.json#/definitions/TaskId"
+    },
+    "urgency": {
+      "$ref": "../common.schema.json#/definitions/Urgency"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the default applies (RFC 3339)."
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/TaskId"
+      },
+      "description": "Tasks paused while the brief is open; may be empty.",
+      "uniqueItems": true
+    },
+    "brief": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    }
+  },
+  "required": [
+    "category",
+    "raisedBy",
+    "urgency",
+    "deadline",
+    "blocks",
+    "brief"
+  ]
+}

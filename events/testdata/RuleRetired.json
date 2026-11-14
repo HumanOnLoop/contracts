@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "reason": "Superseded by version 2.",
+  "supersededBy": "integration.export-replica"
+}

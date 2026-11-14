@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/brief/BriefEscalated.schema.json",
+  "title": "BriefEscalated",
+  "description": "An unanswered brief went past its deadline (or the recipient's daily cap) and was escalated to a backup. Topic hotl.brief; subject and key: the brief id. Producer: Review service. Main consumers: Channel adapters.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from": {
+      "$ref": "../common.schema.json#/definitions/Recipient"
+    },
+    "to": {
+      "$ref": "../common.schema.json#/definitions/Recipient"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "deadline",
+        "cap"
+      ],
+      "description": "deadline: unanswered at the deadline; cap: the recipient's daily cap was reached."
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Channel"
+      },
+      "description": "Channels to deliver on.",
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "from",
+    "to",
+    "reason",
+    "channels"
+  ]
+}

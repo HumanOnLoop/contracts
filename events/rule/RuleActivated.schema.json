@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/RuleActivated.schema.json",
+  "title": "RuleActivated",
+  "description": "A rule version took effect: in shadow (evaluated and reported, not enforced) or enforced. Topic hotl.rule; subject and key: the rule id. Producer: Rule engine. Main consumers: Knowledge graph, MCP server cache.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "$ref": "../common.schema.json#/definitions/RuleVersion"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "shadow",
+        "enforced"
+      ],
+      "description": "shadow: reported only; enforced: hard rules block, soft rules warn."
+    },
+    "severity": {
+      "$ref": "../common.schema.json#/definitions/Severity"
+    },
+    "evaluator": {
+      "$ref": "../common.schema.json#/definitions/Evaluator"
+    },
+    "scope": {
+      "$ref": "../common.schema.json#/definitions/RuleScope"
+    },
+    "rule": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    }
+  },
+  "required": [
+    "version",
+    "mode",
+    "severity",
+    "evaluator",
+    "scope",
+    "rule"
+  ]
+}
