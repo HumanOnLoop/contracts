@@ -108,7 +108,7 @@ func FrontMatter(md []byte) (map[string]any, []byte, error) {
 	if len(doc.Content) == 0 {
 		return map[string]any{}, body, nil
 	}
-	v, err := textValue(doc.Content[0])
+	v, err := textValue(doc.Content[0], 0)
 	if err != nil {
 		return nil, nil, fmt.Errorf("front matter: %w", err)
 	}
@@ -119,11 +119,18 @@ func FrontMatter(md []byte) (map[string]any, []byte, error) {
 	return m, body, nil
 }
 
+// maxDepth bounds nesting in front matter; the templates need two levels.
+const maxDepth = 16
+
 // textValue converts a YAML node to JSON-compatible values with every scalar as its literal text, except null.
-func textValue(n *yaml.Node) (any, error) {
+// Aliases are refused: front matter never needs them, and expanding them lets a few lines grow without bound.
+func textValue(n *yaml.Node, depth int) (any, error) {
+	if depth > maxDepth {
+		return nil, fmt.Errorf("line %d: nested more than %d levels deep", n.Line, maxDepth)
+	}
 	switch n.Kind {
 	case yaml.AliasNode:
-		return textValue(n.Alias)
+		return nil, fmt.Errorf("line %d: YAML aliases (*name) are not allowed in front matter", n.Line)
 	case yaml.ScalarNode:
 		if n.ShortTag() == "!!null" {
 			return nil, nil
@@ -132,7 +139,7 @@ func textValue(n *yaml.Node) (any, error) {
 	case yaml.SequenceNode:
 		out := make([]any, 0, len(n.Content))
 		for _, c := range n.Content {
-			v, err := textValue(c)
+			v, err := textValue(c, depth+1)
 			if err != nil {
 				return nil, err
 			}
@@ -151,7 +158,7 @@ func textValue(n *yaml.Node) (any, error) {
 				return nil, fmt.Errorf("line %d: %s is set twice", k.Line, k.Value)
 			}
 			seen[k.Value] = true
-			v, err := textValue(vn)
+			v, err := textValue(vn, depth+1)
 			if err != nil {
 				return nil, err
 			}

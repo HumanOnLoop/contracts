@@ -194,6 +194,11 @@ func TestFrontMatter(t *testing.T) {
 		{"CRLF and BOM", "\uFEFF---\r\nid: x\r\n---\r\nbody\r\n", false, "body\n"},
 		{"closing line at end of file", "---\nid: x\n---", false, ""},
 		{"empty front matter", "---\n---\nbody", false, "body"},
+		{"alias", "---\na: &x [1, 2]\nb: *x\n---\n", true, ""},
+		{"alias bomb", "---\na: &a [x, x, x, x, x, x, x, x, x]\nb: &b [*a, *a, *a, *a, *a, *a, *a, *a, *a]\n" +
+			"c: &c [*b, *b, *b, *b, *b, *b, *b, *b, *b]\nd: &d [*c, *c, *c, *c, *c, *c, *c, *c, *c]\n" +
+			"e: [*d, *d, *d, *d, *d, *d, *d, *d, *d]\n---\n", true, ""},
+		{"too deep", "---\na: " + strings.Repeat("[", 20) + strings.Repeat("]", 20) + "\n---\n", true, ""},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
