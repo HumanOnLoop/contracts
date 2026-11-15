@@ -12,6 +12,7 @@ package agents
 import (
 	"time"
 
+	"github.com/HumanOnLoop/contracts/documents"
 	"github.com/HumanOnLoop/contracts/events"
 )
 
@@ -37,6 +38,9 @@ const (
 	ActivityPublishArtifact = "PublishArtifact"
 	ActivityWatchMain       = "WatchMain"
 	ActivityRevert          = "Revert"
+	// ActivityOnboard asks the onboarder for a repo's profile (since v0.8.0, ADR 0013). An attachment's workflow
+	// schedules it, not a run's.
+	ActivityOnboard = "Onboard"
 )
 
 // RunRef identifies the run an activity works for. Every request carries one.
@@ -464,4 +468,28 @@ type BriefOption struct {
 	Text        string `json:"text"`
 	Impact      string `json:"impact"`
 	Recommended bool   `json:"recommended,omitempty"`
+}
+
+// OnboardRequest asks the onboarder to inspect a repo and propose its profile (ADR 0013). Run identifies the
+// attachment: RunID and IntentID are the attachment id (ATT-0001), and Package is empty, since an attachment has no
+// intent package.
+type OnboardRequest struct {
+	Run  RunRef      `json:"run"`
+	Repo events.Repo `json:"repo"`
+	// Round counts the proposals of this attachment, from 1; a revision asked for by the architect is the next round.
+	Round int `json:"round"`
+	// Current is the repo's approved profile, when it has one: a change starts from it.
+	Current *documents.RepoProfile `json:"current,omitempty"`
+	// Previous is the proposal the architect asked to revise, and Feedback what they said about it.
+	Previous *documents.RepoProfile `json:"previous,omitempty"`
+	Feedback []string               `json:"feedback,omitempty"`
+	Limit    Budget                 `json:"limit,omitzero"`
+}
+
+// OnboardResult is the onboarder's proposal: a profile that passed the repo profile schema, and its evidence for
+// the architect (Markdown: which manifests, CI files and Dockerfiles each field comes from).
+type OnboardResult struct {
+	Profile  documents.RepoProfile `json:"profile"`
+	Evidence string                `json:"evidence"`
+	Usage    Usage                 `json:"usage,omitzero"`
 }

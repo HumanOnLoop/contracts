@@ -22,6 +22,7 @@ type AgentRole string
 
 const AgentRoleImplementer AgentRole = "implementer"
 const AgentRoleIntegrator AgentRole = "integrator"
+const AgentRoleOnboarder AgentRole = "onboarder"
 const AgentRolePlanner AgentRole = "planner"
 const AgentRoleReviewer AgentRole = "reviewer"
 const AgentRoleTester AgentRole = "tester"
@@ -491,6 +492,23 @@ const RecipientKindRole RecipientKind = "role"
 // Repository name as connected to HOTL, for example orders-service.
 type Repo string
 
+// Someone asked HOTL to attach a repo, or to change an attached repo's profile:
+// the onboarder proposes a profile (or the one given is proposed as is) and the
+// architect approves it through a rule brief (ADR 0013). Topic hotl.intent;
+// subject and key: the attachment id, for example ATT-0001. Producer: Intake. Main
+// consumers: Orchestrator (starts the attachment).
+type RepoAttachRequested struct {
+	// A profile written by hand (JSON, per documents/repo-profile.schema.json) to
+	// propose instead of asking the onboarder for one.
+	Profile *DocumentRef `json:"profile,omitempty,omitzero"`
+
+	// Repo corresponds to the JSON schema field "repo".
+	Repo Repo `json:"repo"`
+
+	// RequestedBy corresponds to the JSON schema field "requestedBy".
+	RequestedBy Person `json:"requestedBy"`
+}
+
 // A harvester parsed a repo at a commit; the knowledge graph loads the result.
 // Topic hotl.knowledge; subject and key: the repo. Producer: Harvesters. Main
 // consumers: Knowledge graph.
@@ -512,6 +530,28 @@ type RepoHarvestedMode string
 
 const RepoHarvestedModeFull RepoHarvestedMode = "full"
 const RepoHarvestedModeIncremental RepoHarvestedMode = "incremental"
+
+// The architect approved a version of a repo's profile through its rule brief;
+// from now on HOTL works on the repo with it (ADR 0013). Topic hotl.rule; subject
+// and key: the repo. Producer: Review service. Main consumers: Knowledge graph;
+// intake, the agent runtime and the CI/CD adapter read profiles from the review
+// service.
+type RepoProfileApproved struct {
+	// ApprovedBy corresponds to the JSON schema field "approvedBy".
+	ApprovedBy Person `json:"approvedBy"`
+
+	// The attachment that proposed it, for example ATT-0001.
+	Attachment *string `json:"attachment,omitempty,omitzero"`
+
+	// BriefID corresponds to the JSON schema field "briefId".
+	BriefID BriefID `json:"briefId"`
+
+	// Profile corresponds to the JSON schema field "profile".
+	Profile DocumentRef `json:"profile"`
+
+	// The profile version now in effect.
+	Version int `json:"version"`
+}
 
 // A rule version took effect: in shadow (evaluated and reported, not enforced) or
 // enforced. Topic hotl.rule; subject and key: the rule id. Producer: Rule engine.

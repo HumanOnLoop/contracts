@@ -170,3 +170,7 @@ func textValue(n *yaml.Node, depth int) (any, error) {
 	}
 	return nil, fmt.Errorf("line %d: unsupported YAML", n.Line)
 }
+
+func schemaValidateJSON(schemaPath string, raw []byte) error {
+	return schema.Default().ValidateJSON(schemaPath, raw)
+}

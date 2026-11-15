@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/documents/repo-profile.schema.json",
+  "title": "RepoProfile",
+  "description": "How HOTL works on one attached repo: its languages, the image agent Jobs run in, the commands that build, test, lint and format it, the CI check that gates merges, how it merges and publishes, and its default branch. One profile per repo, versioned; a new version takes effect only when the architect approves it through a rule brief (ADR 0013). Commands run with sh -c at the repo root.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["repo", "defaultBranch", "languages", "image", "commands", "testFiles", "ci", "merge"],
+  "properties": {
+    "repo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repo name as connected to HOTL, the same as on GitHub, for example playground."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the profile, from 1. The review service assigns it when the profile is proposed; a proposer leaves it out."
+    },
+    "defaultBranch": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The branch runs merge into and branch from, for example main."
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1},
+      "description": "Languages of the repo's code, as rule scopes name them: go, python, typescript, markdown, yaml, ..."
+    },
+    "image": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The agent toolchain image every agent Job for this repo runs: Claude Code, git, agent-job and the repo's toolchain, for example hotl/agent:dev or hotl/agent-python:dev."
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["test", "testReport"],
+      "description": "The commands of the tester's verified run, in the order format, lint, build, test. A command passes when it exits 0. Commands left out are not run.",
+      "properties": {
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Checks formatting without changing files; exits non-zero when a file needs formatting."
+        },
+        "lint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Static checks, for example go vet ./... or ruff check ."
+        },
+        "build": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Builds the repo, for example go build ./..."
+        },
+        "test": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Runs every test. For testReport go-test-json it prints go test -json on stdout; for junit-xml it writes JUnit XML to the file named by $HOTL_TEST_REPORT."
+        },
+        "testReport": {
+          "type": "string",
+          "enum": ["go-test-json", "junit-xml"],
+          "description": "How the verified run reads which tests ran and passed from the test command."
+        },
+        "agent": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Command prefixes the agents that change code (implementer, tester, integrator) may run besides reading, editing and git, for example go test or python -m pytest. A prefix allows that command with any arguments."
+        },
+        "inspect": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Read-only command prefixes the planner and the reviewer may run, for example go list or go doc. They must not run the repo's code."
+        }
+      }
+    },
+    "testFiles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1},
+      "description": "Slash-separated globs (** matches any number of directories) of the files that are tests: the only files the tester may change, for example **/*_test.go and **/testdata/**."
+    },
+    "ci": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check"],
+      "properties": {
+        "check": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the GitHub check run that must pass before a merge and on the default branch after it, for example ci."
+        }
+      }
+    },
+    "merge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy"],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["squash", "merge", "rebase"],
+          "description": "How the CI/CD adapter merges a run's pull request."
+        }
+      }
+    },
+    "publish": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "name", "how"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What is published, for example go-module."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What consumers depend on, for example github.com/HumanOnLoop/contracts."
+          },
+          "how": {
+            "type": "string",
+            "enum": ["semver-tag"],
+            "description": "semver-tag: a tag at the merge commit, one step above the highest semver tag."
+          },
+          "bump": {
+            "type": "string",
+            "enum": ["major", "minor", "patch"],
+            "description": "The step for semver-tag; minor when left out."
+          }
+        }
+      },
+      "description": "Publish steps run after a merge to the default branch is verified. Left out: the repo publishes nothing."
+    },
+    "dependsOn": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1},
+      "description": "Repos whose published artifacts this repo consumes, for merge ordering. For a go repo the CI/CD adapter also reads go.mod."
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/RepoAttachRequested.schema.json",
+  "title": "RepoAttachRequested",
+  "description": "Someone asked HOTL to attach a repo, or to change an attached repo's profile: the onboarder proposes a profile (or the one given is proposed as is) and the architect approves it through a rule brief (ADR 0013). Topic hotl.intent; subject and key: the attachment id, for example ATT-0001. Producer: Intake. Main consumers: Orchestrator (starts the attachment).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    },
+    "requestedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "profile": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef",
+      "description": "A profile written by hand (JSON, per documents/repo-profile.schema.json) to propose instead of asking the onboarder for one."
+    }
+  },
+  "required": [
+    "repo",
+    "requestedBy"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/RepoProfileApproved.schema.json",
+  "title": "RepoProfileApproved",
+  "description": "The architect approved a version of a repo's profile through its rule brief; from now on HOTL works on the repo with it (ADR 0013). Topic hotl.rule; subject and key: the repo. Producer: Review service. Main consumers: Knowledge graph; intake, the agent runtime and the CI/CD adapter read profiles from the review service.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The profile version now in effect."
+    },
+    "profile": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    },
+    "approvedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "attachment": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The attachment that proposed it, for example ATT-0001."
+    }
+  },
+  "required": [
+    "version",
+    "profile",
+    "briefId",
+    "approvedBy"
+  ]
+}

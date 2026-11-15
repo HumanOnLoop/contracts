@@ -49,6 +49,131 @@ const IntentPackagePriorityHigh IntentPackagePriority = "high"
 const IntentPackagePriorityLow IntentPackagePriority = "low"
 const IntentPackagePriorityMedium IntentPackagePriority = "medium"
 
+// How HOTL works on one attached repo: its languages, the image agent Jobs run in,
+// the commands that build, test, lint and format it, the CI check that gates
+// merges, how it merges and publishes, and its default branch. One profile per
+// repo, versioned; a new version takes effect only when the architect approves it
+// through a rule brief (ADR 0013). Commands run with sh -c at the repo root.
+type RepoProfile struct {
+	// Ci corresponds to the JSON schema field "ci".
+	Ci RepoProfileCi `json:"ci"`
+
+	// The commands of the tester's verified run, in the order format, lint, build,
+	// test. A command passes when it exits 0. Commands left out are not run.
+	Commands RepoProfileCommands `json:"commands"`
+
+	// The branch runs merge into and branch from, for example main.
+	DefaultBranch string `json:"defaultBranch"`
+
+	// Repos whose published artifacts this repo consumes, for merge ordering. For a
+	// go repo the CI/CD adapter also reads go.mod.
+	DependsOn []string `json:"dependsOn,omitempty,omitzero"`
+
+	// The agent toolchain image every agent Job for this repo runs: Claude Code, git,
+	// agent-job and the repo's toolchain, for example hotl/agent:dev or
+	// hotl/agent-python:dev.
+	Image string `json:"image"`
+
+	// Languages of the repo's code, as rule scopes name them: go, python, typescript,
+	// markdown, yaml, ...
+	Languages []string `json:"languages"`
+
+	// Merge corresponds to the JSON schema field "merge".
+	Merge RepoProfileMerge `json:"merge"`
+
+	// Publish steps run after a merge to the default branch is verified. Left out:
+	// the repo publishes nothing.
+	Publish []RepoProfilePublishElem `json:"publish,omitempty,omitzero"`
+
+	// Repo name as connected to HOTL, the same as on GitHub, for example playground.
+	Repo string `json:"repo"`
+
+	// Slash-separated globs (** matches any number of directories) of the files that
+	// are tests: the only files the tester may change, for example **/*_test.go and
+	// **/testdata/**.
+	TestFiles []string `json:"testFiles"`
+
+	// Version of the profile, from 1. The review service assigns it when the profile
+	// is proposed; a proposer leaves it out.
+	Version *int `json:"version,omitempty,omitzero"`
+}
+
+type RepoProfileCi struct {
+	// Name of the GitHub check run that must pass before a merge and on the default
+	// branch after it, for example ci.
+	Check string `json:"check"`
+}
+
+// The commands of the tester's verified run, in the order format, lint, build,
+// test. A command passes when it exits 0. Commands left out are not run.
+type RepoProfileCommands struct {
+	// Command prefixes the agents that change code (implementer, tester, integrator)
+	// may run besides reading, editing and git, for example go test or python -m
+	// pytest. A prefix allows that command with any arguments.
+	Agent []string `json:"agent,omitempty,omitzero"`
+
+	// Builds the repo, for example go build ./...
+	Build *string `json:"build,omitempty,omitzero"`
+
+	// Checks formatting without changing files; exits non-zero when a file needs
+	// formatting.
+	Format *string `json:"format,omitempty,omitzero"`
+
+	// Read-only command prefixes the planner and the reviewer may run, for example go
+	// list or go doc. They must not run the repo's code.
+	Inspect []string `json:"inspect,omitempty,omitzero"`
+
+	// Static checks, for example go vet ./... or ruff check .
+	Lint *string `json:"lint,omitempty,omitzero"`
+
+	// Runs every test. For testReport go-test-json it prints go test -json on stdout;
+	// for junit-xml it writes JUnit XML to the file named by $HOTL_TEST_REPORT.
+	Test string `json:"test"`
+
+	// How the verified run reads which tests ran and passed from the test command.
+	TestReport RepoProfileCommandsTestReport `json:"testReport"`
+}
+
+type RepoProfileCommandsTestReport string
+
+const RepoProfileCommandsTestReportGoTestJson RepoProfileCommandsTestReport = "go-test-json"
+const RepoProfileCommandsTestReportJunitXml RepoProfileCommandsTestReport = "junit-xml"
+
+type RepoProfileMerge struct {
+	// How the CI/CD adapter merges a run's pull request.
+	Strategy RepoProfileMergeStrategy `json:"strategy"`
+}
+
+type RepoProfileMergeStrategy string
+
+const RepoProfileMergeStrategyMerge RepoProfileMergeStrategy = "merge"
+const RepoProfileMergeStrategyRebase RepoProfileMergeStrategy = "rebase"
+const RepoProfileMergeStrategySquash RepoProfileMergeStrategy = "squash"
+
+type RepoProfilePublishElem struct {
+	// The step for semver-tag; minor when left out.
+	Bump *RepoProfilePublishElemBump `json:"bump,omitempty,omitzero"`
+
+	// semver-tag: a tag at the merge commit, one step above the highest semver tag.
+	How RepoProfilePublishElemHow `json:"how"`
+
+	// What is published, for example go-module.
+	Kind string `json:"kind"`
+
+	// What consumers depend on, for example github.com/HumanOnLoop/contracts.
+	Name string `json:"name"`
+}
+
+type RepoProfilePublishElemBump string
+
+const RepoProfilePublishElemBumpMajor RepoProfilePublishElemBump = "major"
+const RepoProfilePublishElemBumpMinor RepoProfilePublishElemBump = "minor"
+const RepoProfilePublishElemBumpPatch RepoProfilePublishElemBump = "patch"
+
+type RepoProfilePublishElemHow string
+
+const RepoProfilePublishElemHowSemverTag RepoProfilePublishElemHow = "semver-tag"
+
 // Front matter of a review brief (docs/design: HOTL — Review Brief Template). The
 // review service assigns id and resolves to before it validates a brief against
 // this schema. Checks that need HOTL's state (the run is active, the intent
@@ -100,6 +225,7 @@ type ReviewBriefRaisedBy string
 
 const ReviewBriefRaisedByImplementer ReviewBriefRaisedBy = "implementer"
 const ReviewBriefRaisedByIntegrator ReviewBriefRaisedBy = "integrator"
+const ReviewBriefRaisedByOnboarder ReviewBriefRaisedBy = "onboarder"
 const ReviewBriefRaisedByPlanner ReviewBriefRaisedBy = "planner"
 const ReviewBriefRaisedByReviewer ReviewBriefRaisedBy = "reviewer"
 const ReviewBriefRaisedByTester ReviewBriefRaisedBy = "tester"

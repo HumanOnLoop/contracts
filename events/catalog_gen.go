@@ -146,11 +146,23 @@ func (PrecedentMatched) EventType() string { return "PrecedentMatched" }
 // Topic returns TopicKnowledge.
 func (PrecedentMatched) Topic() string { return TopicKnowledge }
 
+// EventType returns "RepoAttachRequested".
+func (RepoAttachRequested) EventType() string { return "RepoAttachRequested" }
+
+// Topic returns TopicIntent.
+func (RepoAttachRequested) Topic() string { return TopicIntent }
+
 // EventType returns "RepoHarvested".
 func (RepoHarvested) EventType() string { return "RepoHarvested" }
 
 // Topic returns TopicKnowledge.
 func (RepoHarvested) Topic() string { return TopicKnowledge }
+
+// EventType returns "RepoProfileApproved".
+func (RepoProfileApproved) EventType() string { return "RepoProfileApproved" }
+
+// Topic returns TopicRule.
+func (RepoProfileApproved) Topic() string { return TopicRule }
 
 // EventType returns "RuleActivated".
 func (RuleActivated) EventType() string { return "RuleActivated" }
@@ -271,7 +283,9 @@ var catalog = map[string]spec{
 	"PlanApproved":        {topic: TopicRun, schema: "events/run/PlanApproved.schema.json", new: func() Payload { return new(PlanApproved) }},
 	"PlanCreated":         {topic: TopicRun, schema: "events/run/PlanCreated.schema.json", new: func() Payload { return new(PlanCreated) }},
 	"PrecedentMatched":    {topic: TopicKnowledge, schema: "events/knowledge/PrecedentMatched.schema.json", new: func() Payload { return new(PrecedentMatched) }},
+	"RepoAttachRequested": {topic: TopicIntent, schema: "events/intent/RepoAttachRequested.schema.json", new: func() Payload { return new(RepoAttachRequested) }},
 	"RepoHarvested":       {topic: TopicKnowledge, schema: "events/knowledge/RepoHarvested.schema.json", new: func() Payload { return new(RepoHarvested) }},
+	"RepoProfileApproved": {topic: TopicRule, schema: "events/rule/RepoProfileApproved.schema.json", new: func() Payload { return new(RepoProfileApproved) }},
 	"RuleActivated":       {topic: TopicRule, schema: "events/rule/RuleActivated.schema.json", new: func() Payload { return new(RuleActivated) }},
 	"RuleApproved":        {topic: TopicRule, schema: "events/rule/RuleApproved.schema.json", new: func() Payload { return new(RuleApproved) }},
 	"RuleProposed":        {topic: TopicRule, schema: "events/rule/RuleProposed.schema.json", new: func() Payload { return new(RuleProposed) }},

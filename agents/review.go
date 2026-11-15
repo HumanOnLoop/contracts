@@ -8,8 +8,9 @@ import (
 )
 
 // TestReport is the tester's report on a task (ADR 0007): which tests cover each acceptance criterion of the
-// intent, and the verified run. The verified run is not the tester's claim: the agent runtime runs gofmt -l,
-// go vet ./... and go test ./... itself on a clean checkout of the commit the tester pushed, and Passed holds only
+// intent, and the verified run. The verified run is not the tester's claim: the agent runtime runs the repo profile's format, lint,
+// build and test commands itself on a clean checkout of the commit the tester pushed (ADR 0013; before it, gofmt,
+// go vet and go test), and Passed holds only
 // when every check passed, every criterion is covered by a test that ran and passed, and the tester's own verdict
 // agrees with the run.
 type TestReport struct {
@@ -18,7 +19,8 @@ type TestReport struct {
 	// Commit is the commit the verified run checked: the run branch's head after the tester's push.
 	Commit   events.Commit    `json:"commit"`
 	Criteria []CriterionTests `json:"criteria"`
-	// Checks are the verified run's checks, in the order they ran: gofmt, vet, test.
+	// Checks are the verified run's checks, in the order they ran: the profile's format, lint, build and test, those it
+	// has (gofmt, vet and test in reports from before ADR 0013).
 	Checks []TestCheck `json:"checks"`
 	// Claimed is the tester's own verdict: pass or fail.
 	Claimed string `json:"claimed"`
@@ -33,13 +35,14 @@ type CriterionTests struct {
 	// Criterion numbers the acceptance criteria in the order the intent package lists them, from 1.
 	Criterion int    `json:"criterion"`
 	Text      string `json:"text,omitempty"`
-	// Tests are Go test names, such as TestVersion or TestVersion/POST, optionally prefixed with their package.
+	// Tests are test names as the test report gives them, optionally prefixed with their package (Go: TestVersion or
+	// TestVersion/POST) or class (JUnit: test_greet, or tests.test_app.test_greet).
 	Tests []string `json:"tests"`
 }
 
 // TestCheck is one check of the verified run.
 type TestCheck struct {
-	// Name is gofmt, vet or test.
+	// Name is format, lint, build or test (gofmt, vet or test before ADR 0013).
 	Name   string `json:"name"`
 	Passed bool   `json:"passed"`
 	// Output is the end of what the check printed, for a failed check.

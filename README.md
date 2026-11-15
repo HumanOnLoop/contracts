@@ -2,8 +2,10 @@
 
 Part of HOTL (Human On The Loop). The schemas every HOTL service shares, and the Go library generated from them:
 
-- the **event envelope** and a schema for each of the **39 events** in the catalogue, one directory per topic;
-- the **front matter** of intent packages, review briefs and rules (the rule envelope);
+- the **event envelope** and a schema for each of the **39 events** in the catalogue, plus RepoAttachRequested and
+  RepoProfileApproved (ADR 0013), one directory per topic;
+- the **front matter** of intent packages, review briefs and rules (the rule envelope), and the **repo profile**
+  (JSON, ADR 0013);
 - a Go module, `github.com/HumanOnLoop/contracts`, with generated types and helpers to build, validate, produce and
   consume events.
 
@@ -64,10 +66,10 @@ with header `content-type: application/cloudevents+json; charset=UTF-8`.
 
 | Topic | Events |
 | --- | --- |
-| `hotl.intent` | IntentSubmitted, IntentValidated, IntentRejected, IntentSignedOff, IntentVersionSigned |
+| `hotl.intent` | IntentSubmitted, IntentValidated, IntentRejected, IntentSignedOff, IntentVersionSigned, RepoAttachRequested |
 | `hotl.run` | RunStarted, PlanCreated, PlanApproved, TaskStarted, TaskChecked, TaskCompleted, TaskFailed, BranchPushed, MergeCompleted, ArtifactPublished, MainVerified, MainBroken, BudgetExceeded, RunPaused, RunResumed, RunSteered, RunDelivered, RunAccepted, RunAbandoned |
 | `hotl.brief` | BriefRaised, BriefRejected, BriefDelivered, BriefForwarded, BriefEscalated, BriefWithdrawn, DecisionRecorded |
-| `hotl.rule` | RuleProposed, RuleApproved, RuleRejected, RuleActivated, RuleRetired |
+| `hotl.rule` | RuleProposed, RuleApproved, RuleRejected, RuleActivated, RuleRetired, RepoProfileApproved |
 | `hotl.knowledge` | RepoHarvested, GraphUpdated, PrecedentMatched |
 
 Each schema's description names its producer, main consumers and subject; the design's
@@ -89,6 +91,17 @@ fenced blocks nothing in them can close, so it passes the review service's check
 
 Since v0.7.0 `PushResult.NoChanges` reports a task whose work adds nothing to the default branch, so the run
 can tell an intent that is already satisfied on main from a failed push (ADR 0011).
+
+## Repo profiles
+
+`documents/repo-profile.schema.json` (since v0.8.0, ADR 0013) is how HOTL works on one attached repo: its
+languages, the agent toolchain image, the format, lint, build and test commands of the tester's verified run (and
+how to read its test report: `go-test-json` or `junit-xml`), the command prefixes agents may run, the test files,
+the CI check that gates merges, the merge strategy, publish steps, the default branch and its dependencies.
+`documents.ParseRepoProfile` validates one; `RepoProfile.Checks()` lists the verified run's commands in order.
+The review service stores the versions and records their approval; package `profiles` is the client the other
+services read them with. `agents.ActivityOnboard` (`OnboardRequest`, `OnboardResult`) asks the onboarder agent for
+a proposal, and `onboarder` is a new `AgentRole`.
 
 ## Run signals
 

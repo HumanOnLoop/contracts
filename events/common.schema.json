@@ -81,7 +81,8 @@
         "implementer",
         "tester",
         "reviewer",
-        "integrator"
+        "integrator",
+        "onboarder"
       ],
       "description": "Role of a HOTL agent."
     },

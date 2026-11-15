@@ -1,0 +1,18 @@
+{
+  "repo": "playground",
+  "defaultBranch": "main",
+  "languages": ["go"],
+  "image": "hotl/agent:dev",
+  "commands": {
+    "format": "out=$(gofmt -l .); [ -z \"$out\" ] || { echo \"$out\"; exit 1; }",
+    "lint": "go vet ./...",
+    "build": "go build ./...",
+    "test": "go test -json -count=1 ./...",
+    "testReport": "go-test-json",
+    "agent": ["go build", "go test", "go vet", "go fmt", "gofmt", "go mod tidy", "go run", "go list", "go doc", "go version", "go env"],
+    "inspect": ["go list", "go doc", "go version", "go env"]
+  },
+  "testFiles": ["**/*_test.go", "**/testdata/**"],
+  "ci": {"check": "ci"},
+  "merge": {"strategy": "squash"}
+}
