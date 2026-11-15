@@ -1,0 +1,38 @@
+# The "ci" check: the same checks as the repo's HOTL profile (platform/profiles/contracts.json, ADR 0013). HOTL's CI/CD
+# adapter waits for it on every run branch before it merges, and on main after every merge (ADR 0008).
+name: ci
+
+on:
+  push:
+    # GitHub names revert branches revert-<pr>-<head ref>, and run heads hold a slash, which * does not match.
+    branches: [main, "run/**", "revert-**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.sha }}
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The compatibility test compares the schemas with the last release tag.
+          fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: format
+        run: "out=$(gofmt -l .); [ -z \"$out\" ] || { echo \"$out\"; exit 1; }"
+      - name: lint
+        run: go vet ./...
+      - name: build
+        run: go build ./...
+      - name: test
+        run: go test -count=1 ./...
+      - name: generated code is current
+        run: make check-generated
