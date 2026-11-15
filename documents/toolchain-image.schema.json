@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/documents/toolchain-image.schema.json",
+  "title": "ToolchainImage",
+  "description": "An entry of HOTL's toolchain image catalogue (ADR 0013): an image that holds the toolchain of some repos, which a repo profile names by its name. HOTL injects its own tools (agent-job and Claude Code) into the image's agent and report containers, so the image needs only a POSIX shell, git, glibc and the toolchain. Entries are versioned and take effect only when the architect approves them through a rule brief.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "ref", "languages", "description"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$",
+      "description": "The name profiles use, for example go or python."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the entry, from 1. The review service assigns it; a proposer leaves it out."
+    },
+    "ref": {
+      "type": "string",
+      "pattern": "^([a-z0-9][a-z0-9._/:-]*@)?sha256:[0-9a-f]{64}$",
+      "description": "The image, pinned: a registry reference with its manifest digest (registry/name@sha256:...), or the image id of an image loaded into the cluster's nodes (sha256:...)."
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1},
+      "description": "Languages whose repos the image serves, as rule scopes name them."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "What the image holds (toolchain and tool versions), for the people who choose and approve it."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Where the image is built from, for example agent-runtime/toolchains/go/Dockerfile at a commit."
+    }
+  }
+}

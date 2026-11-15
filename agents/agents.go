@@ -41,6 +41,8 @@ const (
 	// ActivityOnboard asks the onboarder for a repo's profile (since v0.8.0, ADR 0013). An attachment's workflow
 	// schedules it, not a run's.
 	ActivityOnboard = "Onboard"
+	// ActivitySmokeImage smoke-tests a toolchain image in a Job without credentials (since v0.9.0, ADR 0013).
+	ActivitySmokeImage = "SmokeImage"
 )
 
 // RunRef identifies the run an activity works for. Every request carries one.
@@ -492,4 +494,28 @@ type OnboardResult struct {
 	Profile  documents.RepoProfile `json:"profile"`
 	Evidence string                `json:"evidence"`
 	Usage    Usage                 `json:"usage,omitzero"`
+}
+
+// SmokeRequest asks the agent runtime to smoke-test a toolchain image: run it as an agent Job's containers would,
+// with HOTL's tools injected and no credential, and check that it has what a Job needs (ADR 0013).
+type SmokeRequest struct {
+	// Run identifies the registration or attachment that asks.
+	Run RunRef `json:"run"`
+	// Image is the pinned image reference to test.
+	Image string `json:"image"`
+	// Commands are commands that must exist in the image, such as the first words of a profile's checks.
+	Commands []string `json:"commands,omitempty"`
+}
+
+// SmokeResult is the smoke test's verdict and each check.
+type SmokeResult struct {
+	Passed bool         `json:"passed"`
+	Checks []SmokeCheck `json:"checks"`
+}
+
+// SmokeCheck is one check of a smoke test, such as "git", "claude" or "command go".
+type SmokeCheck struct {
+	Name   string `json:"name"`
+	Passed bool   `json:"passed"`
+	Output string `json:"output,omitempty"`
 }

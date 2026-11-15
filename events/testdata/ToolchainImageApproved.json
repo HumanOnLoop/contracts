@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "image": {
+    "uri": "http://review-service.hotl.svc:8080/images/java/versions/1",
+    "sha256": "3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b"
+  },
+  "briefId": "BRF-0120",
+  "approvedBy": "Architect, HOTL",
+  "request": "IMG-0001"
+}

@@ -900,6 +900,44 @@ type TaskStarted struct {
 	TaskID TaskID `json:"taskId"`
 }
 
+// The architect approved a version of a toolchain image catalogue entry through
+// its rule brief; profiles that name it now run its image (ADR 0013). Topic
+// hotl.rule; subject and key: the entry's name. Producer: Review service. Main
+// consumers: Knowledge graph; the agent runtime reads the catalogue from the
+// review service.
+type ToolchainImageApproved struct {
+	// ApprovedBy corresponds to the JSON schema field "approvedBy".
+	ApprovedBy Person `json:"approvedBy"`
+
+	// BriefID corresponds to the JSON schema field "briefId".
+	BriefID BriefID `json:"briefId"`
+
+	// Image corresponds to the JSON schema field "image".
+	Image DocumentRef `json:"image"`
+
+	// The registration that proposed it, for example IMG-0001.
+	Request *string `json:"request,omitempty,omitzero"`
+
+	// The entry version now in effect.
+	Version int `json:"version"`
+}
+
+// Someone asked to add a toolchain image to the catalogue, or to change an entry:
+// the image is smoke-tested and the architect approves it through a rule brief
+// (ADR 0013). Topic hotl.intent; subject and key: the request id, for example
+// IMG-0001. Producer: Intake. Main consumers: Orchestrator (starts the
+// registration).
+type ToolchainImageRequested struct {
+	// The proposed entry (JSON, per documents/toolchain-image.schema.json).
+	Image DocumentRef `json:"image"`
+
+	// The catalogue entry's name.
+	Name string `json:"name"`
+
+	// RequestedBy corresponds to the JSON schema field "requestedBy".
+	RequestedBy Person `json:"requestedBy"`
+}
+
 // Absolute URL.
 type URL string
 

@@ -69,9 +69,8 @@ type RepoProfile struct {
 	// go repo the CI/CD adapter also reads go.mod.
 	DependsOn []string `json:"dependsOn,omitempty,omitzero"`
 
-	// The agent toolchain image every agent Job for this repo runs: Claude Code, git,
-	// agent-job and the repo's toolchain, for example hotl/agent:dev or
-	// hotl/agent-python:dev.
+	// The toolchain image catalogue entry the agent and report steps of this repo's
+	// Jobs run, by name, for example go or python (ADR 0013).
 	Image string `json:"image"`
 
 	// Languages of the repo's code, as rule scopes name them: go, python, typescript,
@@ -302,3 +301,34 @@ const RuleStatusActive RuleStatus = "active"
 const RuleStatusProposed RuleStatus = "proposed"
 const RuleStatusRetired RuleStatus = "retired"
 const RuleStatusShadow RuleStatus = "shadow"
+
+// An entry of HOTL's toolchain image catalogue (ADR 0013): an image that holds the
+// toolchain of some repos, which a repo profile names by its name. HOTL injects
+// its own tools (agent-job and Claude Code) into the image's agent and report
+// containers, so the image needs only a POSIX shell, git, glibc and the toolchain.
+// Entries are versioned and take effect only when the architect approves them
+// through a rule brief.
+type ToolchainImage struct {
+	// What the image holds (toolchain and tool versions), for the people who choose
+	// and approve it.
+	Description string `json:"description"`
+
+	// Languages whose repos the image serves, as rule scopes name them.
+	Languages []string `json:"languages"`
+
+	// The name profiles use, for example go or python.
+	Name string `json:"name"`
+
+	// The image, pinned: a registry reference with its manifest digest
+	// (registry/name@sha256:...), or the image id of an image loaded into the
+	// cluster's nodes (sha256:...).
+	Ref string `json:"ref"`
+
+	// Where the image is built from, for example
+	// agent-runtime/toolchains/go/Dockerfile at a commit.
+	Source *string `json:"source,omitempty,omitzero"`
+
+	// Version of the entry, from 1. The review service assigns it; a proposer leaves
+	// it out.
+	Version *int `json:"version,omitempty,omitzero"`
+}

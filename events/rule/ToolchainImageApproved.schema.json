@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/ToolchainImageApproved.schema.json",
+  "title": "ToolchainImageApproved",
+  "description": "The architect approved a version of a toolchain image catalogue entry through its rule brief; profiles that name it now run its image (ADR 0013). Topic hotl.rule; subject and key: the entry's name. Producer: Review service. Main consumers: Knowledge graph; the agent runtime reads the catalogue from the review service.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The entry version now in effect."
+    },
+    "image": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    },
+    "approvedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The registration that proposed it, for example IMG-0001."
+    }
+  },
+  "required": [
+    "version",
+    "image",
+    "briefId",
+    "approvedBy"
+  ]
+}

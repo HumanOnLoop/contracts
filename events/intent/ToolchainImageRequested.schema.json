@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/ToolchainImageRequested.schema.json",
+  "title": "ToolchainImageRequested",
+  "description": "Someone asked to add a toolchain image to the catalogue, or to change an entry: the image is smoke-tested and the architect approves it through a rule brief (ADR 0013). Topic hotl.intent; subject and key: the request id, for example IMG-0001. Producer: Intake. Main consumers: Orchestrator (starts the registration).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The catalogue entry's name."
+    },
+    "requestedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "image": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef",
+      "description": "The proposed entry (JSON, per documents/toolchain-image.schema.json)."
+    }
+  },
+  "required": [
+    "name",
+    "requestedBy",
+    "image"
+  ]
+}

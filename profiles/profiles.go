@@ -8,6 +8,14 @@
 //	GET  /repos/{repo}/profiles              {"profiles": [Version...]}: every version, proposals included
 //	GET  /repos/{repo}/profiles/{version}    one version's profile, as stored (its stable URL)
 //	POST /repos/{repo}/profiles              Proposal → 201 Proposed
+//
+// and for the toolchain image catalogue (since v0.9.0):
+//
+//	GET  /images                             {"images": [entry...]}: every approved catalogue entry
+//	GET  /images/{name}                      the approved entry; 404 when there is none
+//	GET  /images/{name}/versions             {"versions": [ImageVersion...]}
+//	GET  /images/{name}/versions/{version}   one version's entry, as stored
+//	POST /images/{name}/versions             ImageProposal → 201 Proposed
 package profiles
 
 import (
@@ -173,4 +181,55 @@ func (c *Client) do(ctx context.Context, method, path string, body []byte, out a
 		return fmt.Errorf("review service %s %s: %w", method, path, err)
 	}
 	return nil
+}
+
+// ImageVersion is one version of a toolchain image catalogue entry and where it stands.
+type ImageVersion struct {
+	Name       string                   `json:"name"`
+	Version    int                      `json:"version"`
+	Status     Status                   `json:"status"`
+	Image      documents.ToolchainImage `json:"image"`
+	Document   events.DocumentRef       `json:"document"`
+	Request    string                   `json:"request,omitempty"`
+	RunBriefID string                   `json:"runBriefId,omitempty"`
+	BriefID    string                   `json:"briefId,omitempty"`
+	DecidedBy  events.Person            `json:"decidedBy,omitempty"`
+	ProposedAt time.Time                `json:"proposedAt"`
+	DecidedAt  *time.Time               `json:"decidedAt,omitempty"`
+}
+
+// ImageProposal proposes a new version of a catalogue entry; it takes effect only when the brief named by
+// RunBriefID is answered with ApproveOption.
+type ImageProposal struct {
+	Image         documents.ToolchainImage `json:"image"`
+	Request       string                   `json:"request"`
+	RunBriefID    string                   `json:"runBriefId"`
+	ApproveOption string                   `json:"approveOption"`
+}
+
+// GetImage returns the approved catalogue entry of that name, or ErrNotFound.
+func (c *Client) GetImage(ctx context.Context, name string) (documents.ToolchainImage, error) {
+	var t documents.ToolchainImage
+	err := c.do(ctx, http.MethodGet, "/images/"+url.PathEscape(name), nil, &t)
+	return t, err
+}
+
+// ListImages returns every approved catalogue entry.
+func (c *Client) ListImages(ctx context.Context) ([]documents.ToolchainImage, error) {
+	var out struct {
+		Images []documents.ToolchainImage `json:"images"`
+	}
+	err := c.do(ctx, http.MethodGet, "/images", nil, &out)
+	return out.Images, err
+}
+
+// ProposeImage stores a proposed catalogue entry version.
+func (c *Client) ProposeImage(ctx context.Context, p ImageProposal) (Proposed, error) {
+	var out Proposed
+	b, err := json.Marshal(p)
+	if err != nil {
+		return out, err
+	}
+	err = c.do(ctx, http.MethodPost, "/images/"+url.PathEscape(p.Image.Name)+"/versions", b, &out)
+	return out, err
 }

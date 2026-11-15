@@ -5,7 +5,16 @@
   "description": "How HOTL works on one attached repo: its languages, the image agent Jobs run in, the commands that build, test, lint and format it, the CI check that gates merges, how it merges and publishes, and its default branch. One profile per repo, versioned; a new version takes effect only when the architect approves it through a rule brief (ADR 0013). Commands run with sh -c at the repo root.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["repo", "defaultBranch", "languages", "image", "commands", "testFiles", "ci", "merge"],
+  "required": [
+    "repo",
+    "defaultBranch",
+    "languages",
+    "image",
+    "commands",
+    "testFiles",
+    "ci",
+    "merge"
+  ],
   "properties": {
     "repo": {
       "type": "string",
@@ -26,18 +35,24 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "description": "Languages of the repo's code, as rule scopes name them: go, python, typescript, markdown, yaml, ..."
     },
     "image": {
       "type": "string",
       "minLength": 1,
-      "description": "The agent toolchain image every agent Job for this repo runs: Claude Code, git, agent-job and the repo's toolchain, for example hotl/agent:dev or hotl/agent-python:dev."
+      "description": "The toolchain image catalogue entry the agent and report steps of this repo's Jobs run, by name, for example go or python (ADR 0013)."
     },
     "commands": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["test", "testReport"],
+      "required": [
+        "test",
+        "testReport"
+      ],
       "description": "The commands of the tester's verified run, in the order format, lint, build, test. A command passes when it exits 0. Commands left out are not run.",
       "properties": {
         "format": {
@@ -62,19 +77,28 @@
         },
         "testReport": {
           "type": "string",
-          "enum": ["go-test-json", "junit-xml"],
+          "enum": [
+            "go-test-json",
+            "junit-xml"
+          ],
           "description": "How the verified run reads which tests ran and passed from the test command."
         },
         "agent": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1},
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "description": "Command prefixes the agents that change code (implementer, tester, integrator) may run besides reading, editing and git, for example go test or python -m pytest. A prefix allows that command with any arguments."
         },
         "inspect": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1},
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "description": "Read-only command prefixes the planner and the reviewer may run, for example go list or go doc. They must not run the repo's code."
         }
       }
@@ -83,13 +107,18 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "description": "Slash-separated globs (** matches any number of directories) of the files that are tests: the only files the tester may change, for example **/*_test.go and **/testdata/**."
     },
     "ci": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["check"],
+      "required": [
+        "check"
+      ],
       "properties": {
         "check": {
           "type": "string",
@@ -101,11 +130,17 @@
     "merge": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["strategy"],
+      "required": [
+        "strategy"
+      ],
       "properties": {
         "strategy": {
           "type": "string",
-          "enum": ["squash", "merge", "rebase"],
+          "enum": [
+            "squash",
+            "merge",
+            "rebase"
+          ],
           "description": "How the CI/CD adapter merges a run's pull request."
         }
       }
@@ -116,7 +151,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["kind", "name", "how"],
+        "required": [
+          "kind",
+          "name",
+          "how"
+        ],
         "properties": {
           "kind": {
             "type": "string",
@@ -130,12 +169,18 @@
           },
           "how": {
             "type": "string",
-            "enum": ["semver-tag"],
+            "enum": [
+              "semver-tag"
+            ],
             "description": "semver-tag: a tag at the merge commit, one step above the highest semver tag."
           },
           "bump": {
             "type": "string",
-            "enum": ["major", "minor", "patch"],
+            "enum": [
+              "major",
+              "minor",
+              "patch"
+            ],
             "description": "The step for semver-tag; minor when left out."
           }
         }
@@ -145,7 +190,10 @@
     "dependsOn": {
       "type": "array",
       "uniqueItems": true,
-      "items": {"type": "string", "minLength": 1},
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
       "description": "Repos whose published artifacts this repo consumes, for merge ordering. For a go repo the CI/CD adapter also reads go.mod."
     }
   }

@@ -2,10 +2,10 @@
 
 Part of HOTL (Human On The Loop). The schemas every HOTL service shares, and the Go library generated from them:
 
-- the **event envelope** and a schema for each of the **39 events** in the catalogue, plus RepoAttachRequested and
-  RepoProfileApproved (ADR 0013), one directory per topic;
+- the **event envelope** and a schema for each of the **39 events** in the catalogue, plus RepoAttachRequested,
+  RepoProfileApproved, ToolchainImageRequested and ToolchainImageApproved (ADR 0013), one directory per topic;
 - the **front matter** of intent packages, review briefs and rules (the rule envelope), and the **repo profile**
-  (JSON, ADR 0013);
+  and the **toolchain image** catalogue entry (JSON, ADR 0013);
 - a Go module, `github.com/HumanOnLoop/contracts`, with generated types and helpers to build, validate, produce and
   consume events.
 
@@ -66,10 +66,10 @@ with header `content-type: application/cloudevents+json; charset=UTF-8`.
 
 | Topic | Events |
 | --- | --- |
-| `hotl.intent` | IntentSubmitted, IntentValidated, IntentRejected, IntentSignedOff, IntentVersionSigned, RepoAttachRequested |
+| `hotl.intent` | IntentSubmitted, IntentValidated, IntentRejected, IntentSignedOff, IntentVersionSigned, RepoAttachRequested, ToolchainImageRequested |
 | `hotl.run` | RunStarted, PlanCreated, PlanApproved, TaskStarted, TaskChecked, TaskCompleted, TaskFailed, BranchPushed, MergeCompleted, ArtifactPublished, MainVerified, MainBroken, BudgetExceeded, RunPaused, RunResumed, RunSteered, RunDelivered, RunAccepted, RunAbandoned |
 | `hotl.brief` | BriefRaised, BriefRejected, BriefDelivered, BriefForwarded, BriefEscalated, BriefWithdrawn, DecisionRecorded |
-| `hotl.rule` | RuleProposed, RuleApproved, RuleRejected, RuleActivated, RuleRetired, RepoProfileApproved |
+| `hotl.rule` | RuleProposed, RuleApproved, RuleRejected, RuleActivated, RuleRetired, RepoProfileApproved, ToolchainImageApproved |
 | `hotl.knowledge` | RepoHarvested, GraphUpdated, PrecedentMatched |
 
 Each schema's description names its producer, main consumers and subject; the design's
@@ -102,6 +102,12 @@ the CI check that gates merges, the merge strategy, publish steps, the default b
 The review service stores the versions and records their approval; package `profiles` is the client the other
 services read them with. `agents.ActivityOnboard` (`OnboardRequest`, `OnboardResult`) asks the onboarder agent for
 a proposal, and `onboarder` is a new `AgentRole`.
+
+Since v0.9.0 a profile's `image` names an entry of the **toolchain image catalogue**
+(`documents/toolchain-image.schema.json`): a pinned image (`registry/name@sha256:…` or a node-local `sha256:<id>`),
+its languages and description. `documents.ParseToolchainImage` validates one; the `profiles` client reads and
+proposes entries (`GetImage`, `ListImages`, `ProposeImage`); `agents.ActivitySmokeImage` (`SmokeRequest`,
+`SmokeResult`) smoke-tests an image.
 
 ## Run signals
 
