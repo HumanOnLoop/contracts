@@ -83,6 +83,16 @@ never rename or remove one. It also has `ValidateTasks` (the plan checks the wor
 review brief per the template, checked against its schema) and `Inline`/`DecodeInline` (documents carried in
 `data:` URIs until a document store exists).
 
+Since v0.6.0 `TaskResult.Rejected` carries a brief the review service rejected on every try (`RejectedBrief`), and
+`BriefOnRejected` writes the budget brief the orchestrator raises on it: the rejected brief and its reasons in
+fenced blocks nothing in them can close, so it passes the review service's checks (ADR 0010).
+
+## Run signals
+
+Package `runs` (since v0.6.0) has the signals other services send a run's workflow: `SignalDecision` with
+`DecisionSignal`, which the review service sends when a decision is recorded, and `SignalAbort` with `AbortSignal`.
+Their names and JSON are recorded in workflow histories and change only compatibly.
+
 Since v0.4.0 the tester and the reviewer have their types (ADR 0007): `TestReport` (criterion-to-test mapping and
 the runtime's verified run, on `TaskResult.TestReport` and `CheckRequest.TestReport`) and `Finding` (rule id or
 `general`, file and line, `blocking` or `advisory`, issue and fix, on `ReviewResult.Findings`; `Finding.String`
@@ -126,6 +136,11 @@ err = c.Run(ctx, func(ctx context.Context, msg kafka.Message) error {
 	}
 	...
 })
+
+// Read without a group, from a time on (since v0.6.0): nothing is committed; read again from a recent time after
+// a restart.
+r, err := kafka.NewReader([]string{"localhost:19092"}, []string{events.TopicBrief}, time.Now().Add(-time.Hour))
+err = r.Run(ctx, handler)
 
 // Documents: parse and validate front matter, get the Markdown body.
 ip, body, err := documents.ParseIntentPackage(markdown)

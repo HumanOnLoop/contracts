@@ -71,6 +71,7 @@ func TestIntegrationProduceConsume(t *testing.T) {
 	group := prefix + "group"
 	defer deleteGroup(t, admin, group)
 	got := consume(ctx, t, seeds, group, prefix, 3)
+
 	if got[0].ID != run.ID || got[1].ID != paused.ID {
 		t.Errorf("run events out of order: %s, %s", got[0].Type, got[1].Type)
 	}
@@ -87,6 +88,19 @@ func TestIntegrationProduceConsume(t *testing.T) {
 	more := consume(ctx, t, seeds, group, prefix, 1)
 	if more[0].Type != "RunResumed" {
 		t.Errorf("after commit, got %s first; want only the new RunResumed", more[0].Type)
+	}
+
+	// A reader from before the events sees all four; one from a later time sees only what came after it.
+	read(ctx, t, seeds, prefix, time.Now().Add(-time.Hour), 4)
+	after := time.Now()
+	time.Sleep(10 * time.Millisecond)
+	late, _ := events.New(events.BriefWithdrawn{WithdrawnBy: events.AgentRoleImplementer, Reason: "Later."},
+		events.Meta{Source: "/hotl/test", Subject: "BRF-0108", RunID: "RUN-0042-1"})
+	if err := p.Publish(ctx, late); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(ctx, t, seeds, prefix, after, 1); got[0].ID != late.ID {
+		t.Errorf("reader from a time read %s, want the later event", got[0].Subject)
 	}
 }
 
@@ -126,6 +140,27 @@ func consume(ctx context.Context, t *testing.T, seeds []string, group, prefix st
 		t.Fatalf("consumer stopped with %v after %d messages", err, len(run)+len(brief))
 	}
 	return append(run, brief...)
+}
+
+func read(ctx context.Context, t *testing.T, seeds []string, prefix string, from time.Time, n int) []Message {
+	t.Helper()
+	r, err := NewReader(seeds, []string{events.TopicRun, events.TopicBrief}, from, WithTopicPrefix(prefix))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	var got []Message
+	stop := errors.New("enough")
+	if err := r.Run(ctx, func(_ context.Context, m Message) error {
+		got = append(got, m)
+		if len(got) == n {
+			return stop
+		}
+		return nil
+	}); !errors.Is(err, stop) {
+		t.Fatalf("reader stopped with %v after %d messages", err, len(got))
+	}
+	return got
 }
 
 func createTopics(ctx context.Context, t *testing.T, cl *kgo.Client, names []string) {

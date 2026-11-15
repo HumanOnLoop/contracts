@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 
@@ -211,6 +212,72 @@ func (c *Consumer) Run(ctx context.Context, h Handler) error {
 
 // Close leaves the consumer group and closes the connection.
 func (c *Consumer) Close() { c.client.Close() }
+
+// Reader reads HOTL events without a consumer group, from a point in time on. It suits a service that keeps what
+// it reads in memory only, and on a restart rebuilds it by reading again from a recent time: nothing is committed.
+type Reader struct {
+	client    *kgo.Client
+	onInvalid func(*kgo.Record, error) error
+}
+
+// NewReader reads the given topics from the first record at or after from.
+func NewReader(brokers []string, topics []string, from time.Time, opts ...Option) (*Reader, error) {
+	if len(topics) == 0 {
+		return nil, errors.New("kafka: a reader needs at least one topic")
+	}
+	c := newConfig(opts)
+	prefixed := make([]string, len(topics))
+	for i, t := range topics {
+		prefixed[i] = c.topicPrefix + t
+	}
+	base := []kgo.Opt{
+		kgo.SeedBrokers(brokers...),
+		kgo.ConsumeTopics(prefixed...),
+		kgo.ConsumeResetOffset(kgo.NewOffset().AfterMilli(from.UnixMilli())),
+	}
+	client, err := kgo.NewClient(append(base, c.clientOpts...)...)
+	if err != nil {
+		return nil, err
+	}
+	return &Reader{client: client, onInvalid: c.onInvalid}, nil
+}
+
+// Run delivers messages to h, in order per partition, until ctx is cancelled, h returns an error, or a fetch fails.
+// It returns nil when ctx is cancelled or the reader is closed.
+func (r *Reader) Run(ctx context.Context, h Handler) error {
+	for {
+		fetches := r.client.PollFetches(ctx)
+		if fetches.IsClientClosed() || ctx.Err() != nil {
+			return nil
+		}
+		var err error
+		fetches.EachError(func(topic string, partition int32, e error) {
+			if err == nil {
+				err = fmt.Errorf("kafka: fetch %s/%d: %w", topic, partition, e)
+			}
+		})
+		fetches.EachRecord(func(rec *kgo.Record) {
+			if err != nil {
+				return
+			}
+			msg, derr := decode(rec)
+			switch {
+			case derr != nil && r.onInvalid == nil:
+				err = fmt.Errorf("kafka: %s/%d@%d is not a HOTL event: %w", rec.Topic, rec.Partition, rec.Offset, derr)
+			case derr != nil:
+				err = r.onInvalid(rec, derr)
+			default:
+				err = h(ctx, msg)
+			}
+		})
+		if err != nil {
+			return err
+		}
+	}
+}
+
+// Close closes the connection.
+func (r *Reader) Close() { r.client.Close() }
 
 // decode reads a record as a HOTL envelope, without validating it against the schemas and without requiring its
 // type to be known.

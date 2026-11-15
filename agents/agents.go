@@ -211,6 +211,10 @@ type TaskResult struct {
 	FilesChanged []string `json:"filesChanged,omitempty"`
 	// TestReport is the tester's report, with the verified run, when the tester did the attempt (ADR 0007).
 	TestReport *TestReport `json:"testReport,omitempty"`
+	// Rejected is set when the agent needed a decision but the review service rejected every brief it raised for
+	// it (ADR 0010). Outcome is then blocked and Brief is nil: the orchestrator raises a brief on it itself
+	// (BriefOnRejected). An orchestrator from before v0.6.0 reads it as a failed attempt.
+	Rejected *RejectedBrief `json:"rejected,omitempty"`
 }
 
 // CheckRequest asks the rule engine or the reviewer agent to evaluate an attempt's result.
