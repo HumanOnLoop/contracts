@@ -87,6 +87,9 @@ Since v0.6.0 `TaskResult.Rejected` carries a brief the review service rejected o
 `BriefOnRejected` writes the budget brief the orchestrator raises on it: the rejected brief and its reasons in
 fenced blocks nothing in them can close, so it passes the review service's checks (ADR 0010).
 
+Since v0.7.0 `PushResult.NoChanges` reports a task whose work adds nothing to the default branch, so the run
+can tell an intent that is already satisfied on main from a failed push (ADR 0011).
+
 ## Run signals
 
 Package `runs` (since v0.6.0) has the signals other services send a run's workflow: `SignalDecision` with

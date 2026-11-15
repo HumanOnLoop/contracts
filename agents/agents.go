@@ -262,6 +262,10 @@ type PushRequest struct {
 type PushResult struct {
 	Branch events.Branch `json:"branch,omitempty"`
 	Commit events.Commit `json:"commit,omitempty"`
+	// NoChanges is set when the task's work adds nothing to the default branch: its commit is already on the
+	// default branch, and its branch is missing or holds nothing more (since v0.7.0). Branch is then empty and
+	// nothing is merged for the task; an orchestrator from before v0.7.0 ignores it.
+	NoChanges bool `json:"noChanges,omitempty"`
 }
 
 // TaskBranch is a done task's pushed work, as input to the merge plan.
