@@ -110,6 +110,13 @@ its languages and description. `documents.ParseToolchainImage` validates one; th
 proposes entries (`GetImage`, `ListImages`, `ProposeImage`); `agents.ActivitySmokeImage` (`SmokeRequest`,
 `SmokeResult`) smoke-tests an image.
 
+## Criteria per task
+
+Since v0.14.0 (ADR 0022) a plan's `TaskSpec.Criteria` names the acceptance criteria, by number, that the task covers;
+the tester verifies only those, in the task's repo. An empty list covers none (an ADR, documentation) and the task is
+not tested; nil, in plans from before, covers every criterion (`Covered`, `Tested`). `ValidateCoverage` checks that a
+plan covers every criterion of its intent.
+
 ## Approvals
 
 Since v0.13.0 (ADR 0021) a rule can be `kind: approval`: a change touching a file in its scope (repos and paths)

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/HumanOnLoop/contracts/events"
 )
@@ -24,6 +25,15 @@ func ValidateTasks(tasks []TaskSpec) error {
 		}
 		if t.Role != events.AgentRoleImplementer && t.Role != events.AgentRoleTester {
 			return fmt.Errorf("task %s has role %q; plan tasks are for an implementer or a tester", t.ID, t.Role)
+		}
+		if t.Criteria != nil {
+			seen := map[int]bool{}
+			for _, c := range *t.Criteria {
+				if c < 1 || seen[c] {
+					return fmt.Errorf("task %s names criterion %d; criteria are numbered from 1, each once", t.ID, c)
+				}
+				seen[c] = true
+			}
 		}
 		idx[t.ID] = i
 	}
@@ -70,3 +80,32 @@ var commitPattern = regexp.MustCompile(`^[0-9a-f]{40}([0-9a-f]{24})?$`)
 
 // ValidCommit reports whether c is a full git commit id, as the events' Commit format requires.
 func ValidCommit(c events.Commit) bool { return commitPattern.MatchString(string(c)) }
+
+// ValidateCoverage checks the plan's tasks against an intent with n acceptance criteria (ADR 0022): a task names
+// only criteria the intent has, and every criterion is covered by at least one task. Tasks from before v0.14.0,
+// which name no criteria, cover every one.
+func ValidateCoverage(tasks []TaskSpec, n int) error {
+	covered := make([]bool, n+1)
+	for _, t := range tasks {
+		if t.Criteria == nil {
+			return nil
+		}
+		for _, c := range *t.Criteria {
+			if c > n {
+				return fmt.Errorf("task %s names criterion %d; the intent has %d", t.ID, c, n)
+			}
+			covered[c] = true
+		}
+	}
+	var missing []string
+	for c := 1; c <= n; c++ {
+		if !covered[c] {
+			missing = append(missing, fmt.Sprint(c))
+		}
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("no task covers criterion %s; give each criterion to the task whose change makes it hold",
+			strings.Join(missing, ", "))
+	}
+	return nil
+}

@@ -98,7 +98,27 @@ type TaskSpec struct {
 	DependsOn []events.TaskID  `json:"dependsOn,omitempty"`
 	// Budget overrides the run's default task budget, field by field.
 	Budget Budget `json:"budget,omitzero"`
+	// Criteria are the acceptance criteria, by number from 1, that the task covers: the tester verifies those, in
+	// the task's repo (since v0.14.0, ADR 0022). An empty list covers none, such as a task that only writes an ADR,
+	// and the task is not tested. Nil, in plans from before, covers every criterion.
+	Criteria *[]int `json:"criteria,omitempty"`
 }
+
+// Covered returns the criteria the task covers, out of n: its own, or all n when it names none.
+func (t TaskSpec) Covered(n int) []int {
+	if t.Criteria == nil {
+		all := make([]int, n)
+		for i := range all {
+			all[i] = i + 1
+		}
+		return all
+	}
+	return *t.Criteria
+}
+
+// Tested reports whether the tester checks the task: it covers at least one criterion, or names none (plans from
+// before v0.14.0).
+func (t TaskSpec) Tested() bool { return t.Criteria == nil || len(*t.Criteria) > 0 }
 
 // Plan is a versioned plan: the planner's document plus the tasks the workflow schedules.
 type Plan struct {
