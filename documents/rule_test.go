@@ -97,3 +97,31 @@ func TestMatchPathAndLanguage(t *testing.T) {
 		}
 	}
 }
+
+func TestParseApprovalRule(t *testing.T) {
+	doc := `---
+id: APR-ADR-1
+title: A new or changed ADR needs an architect
+scope:
+  repos: [docs]
+  paths: ["adr/*.md"]
+severity: hard
+owner: architects
+version: 1
+kind: approval
+evaluator: condition
+---
+
+## Rule
+`
+	r, _, err := ParseRule([]byte(doc))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Kind == nil || *r.Kind != RuleKindApproval || r.Evaluator != RuleEvaluatorCondition || r.Scope.Paths[0] != "adr/*.md" {
+		t.Errorf("rule %+v", r)
+	}
+	if _, _, err := ParseRule([]byte(strings.Replace(doc, "kind: approval", "kind: approve", 1))); err == nil {
+		t.Error("accepted kind approve")
+	}
+}

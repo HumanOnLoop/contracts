@@ -110,6 +110,13 @@ its languages and description. `documents.ParseToolchainImage` validates one; th
 proposes entries (`GetImage`, `ListImages`, `ProposeImage`); `agents.ActivitySmokeImage` (`SmokeRequest`,
 `SmokeResult`) smoke-tests an image.
 
+## Approvals
+
+Since v0.13.0 (ADR 0021) a rule can be `kind: approval`: a change touching a file in its scope (repos and paths)
+needs the rule's owner to approve those files before it is pushed, such as an architect approving a new ADR.
+`ReviewResult.Approvals` (`Approval`, `ApprovalFile`) carries the rules a change meets and each file's content at the
+reviewed commit (at most `MaxApprovalContent`) with its SHA-256; an approval holds for exactly that content.
+
 ## Scopes
 
 Since v0.12.0 (ADR 0018) a run is scoped before it is planned. An intent package names optional `repo_hints`;

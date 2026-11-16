@@ -271,6 +271,36 @@ type ReviewResult struct {
 	Findings []Finding           `json:"findings,omitempty"`
 	Report   *events.DocumentRef `json:"report,omitempty"`
 	Usage    Usage               `json:"usage,omitzero"`
+	// Approvals are the approval rules the change meets, with the files each needs approved (since v0.13.0, ADR
+	// 0021). HOTL's code finds them from the rules and the changed files, not the reviewer agent. Approved says
+	// nothing about them: the run asks each rule's owner before it pushes the change.
+	Approvals []Approval `json:"approvals,omitempty"`
+}
+
+// MaxApprovalContent bounds the text of one file an approval carries; longer files are cut and marked Truncated.
+const MaxApprovalContent = 24 << 10
+
+// Approval is an approval rule a change meets: the files in the rule's scope that the change touches, which the
+// rule's owner must approve before the change is pushed (ADR 0021).
+type Approval struct {
+	Rule        string         `json:"rule"`
+	RuleVersion int            `json:"ruleVersion"`
+	Title       string         `json:"title"`
+	Owner       string         `json:"owner"`
+	Files       []ApprovalFile `json:"files"`
+}
+
+// ApprovalFile is one file to approve, as it is at the reviewed commit.
+type ApprovalFile struct {
+	Path string `json:"path"`
+	// Sha256 is the hex SHA-256 of the file's whole content at the commit, empty when the change removes the file.
+	// An approval holds for exactly this content: a later change to the file needs approving again.
+	Sha256 string `json:"sha256,omitempty"`
+	// Removed is set when the change deletes the file.
+	Removed bool `json:"removed,omitempty"`
+	// Content is the file's text, at most MaxApprovalContent bytes; Truncated says it was cut.
+	Content   string `json:"content,omitempty"`
+	Truncated bool   `json:"truncated,omitempty"`
 }
 
 // PushRequest asks the CI/CD adapter to push a task's checked result to the run's feature branch.

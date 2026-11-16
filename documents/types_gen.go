@@ -248,14 +248,17 @@ const ReviewBriefUrgencyNormal ReviewBriefUrgency = "normal"
 // natural language an LLM judge applies to a change. Scope fields left out match
 // everything. A boundary rule (kind boundary) protects a boundary between repos:
 // instead of judging a change, it names a condition on a run's scope, and a scope
-// that meets it needs an architect before planning (ADR 0018).
+// that meets it needs an architect before planning (ADR 0018). An approval rule
+// (kind approval) names files a person must approve: a change touching a file in
+// its scope waits for the rule's owner (ADR 0021).
 type Rule struct {
 	// A boundary rule's condition: a scope meets it when every part given holds.
 	Boundary *RuleBoundary `json:"boundary,omitempty,omitzero"`
 
 	// What evaluates the rule: an OPA/Rego policy, an architecture test, an LLM judge
-	// (natural language), or condition: the declarative boundary condition in the
-	// envelope, evaluated by HOTL's own code (boundary rules).
+	// (natural language), or condition: evaluated by HOTL's own code from the
+	// envelope, for boundary rules (the boundary condition) and approval rules (the
+	// scope).
 	Evaluator RuleEvaluator `json:"evaluator"`
 
 	// Rule id, stable across the rule's versions, for example GO-ERR-1.
@@ -263,7 +266,9 @@ type Rule struct {
 
 	// change (when left out): the rule judges a change. boundary: the rule protects a
 	// boundary between repos, and its boundary condition is checked against every
-	// run's scope before planning.
+	// run's scope before planning. approval: a change that touches a file in the
+	// rule's scope (repos and paths) needs the rule's owner to approve those files
+	// before it is pushed, such as an architect approving an ADR (ADR 0021).
 	Kind *RuleKind `json:"kind,omitempty,omitzero"`
 
 	// The role or group that owns the rule and decides on changes to it, for example
@@ -328,6 +333,7 @@ const RuleEvaluatorRego RuleEvaluator = "rego"
 
 type RuleKind string
 
+const RuleKindApproval RuleKind = "approval"
 const RuleKindBoundary RuleKind = "boundary"
 const RuleKindChange RuleKind = "change"
 
