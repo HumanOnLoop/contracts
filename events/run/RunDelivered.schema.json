@@ -30,6 +30,11 @@
       },
       "description": "Head of main in each repo the run touched.",
       "minItems": 1
+    },
+    "tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Tokens the run used, planning, tasks and integration included (since v0.10.0)."
     }
   },
   "required": [

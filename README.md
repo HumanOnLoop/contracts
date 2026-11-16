@@ -9,8 +9,9 @@ Part of HOTL (Human On The Loop). The schemas every HOTL service shares, and the
 - a Go module, `github.com/HumanOnLoop/contracts`, with generated types and helpers to build, validate, produce and
   consume events.
 
-The schemas are the source of truth. Change a schema, run `make generate`, commit both. MCP tool definitions
-will live in `mcp/` (not written yet).
+The schemas are the source of truth. Change a schema, run `make generate`, commit both. The knowledge layer's
+shared types are in `knowledge/` (the graph's labels, edges and the harvest result, ADRs 0015 and 0016) and `mcp/`
+(the MCP server's tools, their inputs and outputs, ADR 0017).
 
 Why it is built this way (generator, Kafka client, versioning): [ADR 0002](../docs/adr/0002-contracts-schemas-library-and-versioning.md).
 

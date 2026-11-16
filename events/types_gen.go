@@ -689,6 +689,9 @@ type RunAbandoned struct {
 
 	// Why, in one sentence.
 	Reason string `json:"reason"`
+
+	// Tokens the run used before it was abandoned (since v0.10.0).
+	Tokens *int `json:"tokens,omitempty,omitzero"`
 }
 
 type RunAbandonedCause string
@@ -716,6 +719,9 @@ type RunDelivered struct {
 
 	// Result corresponds to the JSON schema field "result".
 	Result DocumentRef `json:"result"`
+
+	// Tokens the run used, planning, tasks and integration included (since v0.10.0).
+	Tokens *int `json:"tokens,omitempty,omitzero"`
 }
 
 // Main head of a repo after the run's merges.
@@ -861,11 +867,17 @@ type TaskCompleted struct {
 	// Commit corresponds to the JSON schema field "commit".
 	Commit *Commit `json:"commit,omitempty,omitzero"`
 
+	// Paths the task's commits changed, relative to the repo root (since v0.10.0).
+	FilesChanged []string `json:"filesChanged,omitempty,omitzero"`
+
 	// Repo corresponds to the JSON schema field "repo".
 	Repo *Repo `json:"repo,omitempty,omitzero"`
 
 	// TaskID corresponds to the JSON schema field "taskId".
 	TaskID TaskID `json:"taskId"`
+
+	// Tokens the task used over all its attempts and checks (since v0.10.0).
+	Tokens *int `json:"tokens,omitempty,omitzero"`
 }
 
 // A task exhausted its retries. Topic hotl.run; subject and key: the run id.

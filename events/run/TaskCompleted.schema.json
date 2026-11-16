@@ -20,6 +20,19 @@
     },
     "commit": {
       "$ref": "../common.schema.json#/definitions/Commit"
+    },
+    "filesChanged": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Paths the task's commits changed, relative to the repo root (since v0.10.0)."
+    },
+    "tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Tokens the task used over all its attempts and checks (since v0.10.0)."
     }
   },
   "required": [

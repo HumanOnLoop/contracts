@@ -24,6 +24,11 @@
       "type": "string",
       "minLength": 1,
       "description": "Why, in one sentence."
+    },
+    "tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Tokens the run used before it was abandoned (since v0.10.0)."
     }
   },
   "required": [

@@ -3,5 +3,10 @@
   "attempt": 2,
   "repo": "orders-service",
   "branch": "run/RUN-0042-1",
-  "commit": "9fceb02d0ae598e95dc970b74767f19372d61af8"
+  "commit": "9fceb02d0ae598e95dc970b74767f19372d61af8",
+  "filesChanged": [
+    "main.go",
+    "main_test.go"
+  ],
+  "tokens": 61000
 }
