@@ -36,6 +36,22 @@ func ParseIntentPackage(md []byte) (IntentPackage, []byte, error) {
 	return ip, body, err
 }
 
+// Hints are the package's repo hints: repo_hints, then repos, which packages written before scoping use and which
+// is read as hints too (ADR 0018). Each repo appears once, in that order.
+func (ip IntentPackage) Hints() []string {
+	out := []string{}
+	for _, r := range append(append([]string{}, ip.RepoHints...), ip.Repos...) {
+		dup := false
+		for _, o := range out {
+			dup = dup || o == r
+		}
+		if !dup {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
 // ParseReviewBrief reads a review brief: its front matter, validated against the review brief schema, and the
 // Markdown body after it.
 func ParseReviewBrief(md []byte) (ReviewBrief, []byte, error) {

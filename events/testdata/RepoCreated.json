@@ -1,0 +1,12 @@
+{
+  "repo": "orders-export",
+  "url": "https://github.com/HumanOnLoop/orders-export",
+  "visibility": "private",
+  "technology": "go",
+  "defaultBranch": "main",
+  "commit": "4b825dc642cb6eb9a060e54bf8d69288fbee4904",
+  "ciCheck": "ci",
+  "protected": false,
+  "protection": "GitHub refused the ruleset: 403 Upgrade to GitHub Pro or make this repository public",
+  "scopeVersion": 1
+}

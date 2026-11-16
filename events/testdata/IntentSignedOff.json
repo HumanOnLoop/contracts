@@ -9,5 +9,9 @@
     "orders-service",
     "gateway"
   ],
-  "autonomy": "L3"
+  "autonomy": "L3",
+  "repoHints": [
+    "orders-service",
+    "gateway"
+  ]
 }

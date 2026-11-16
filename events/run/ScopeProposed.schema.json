@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/ScopeProposed.schema.json",
+  "title": "ScopeProposed",
+  "description": "The scoper proposed which repos a run touches, with its reasons, confidence and evidence, or that a new repo is needed (ADR 0018). Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Portal, review service (architect brief if a new repo or protected boundary).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scopeVersion": {
+      "$ref": "../common.schema.json#/definitions/ScopeVersion"
+    },
+    "scope": {
+      "$ref": "../common.schema.json#/definitions/Scope"
+    },
+    "next": {
+      "type": "string",
+      "enum": [
+        "confirm",
+        "developer",
+        "architect"
+      ],
+      "description": "What the run does with the proposal: confirm it (existing repos only, high confidence, no protected boundary); ask the developer to confirm or correct it (low confidence); or ask the architect (a new repo or a protected boundary)."
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Why the proposal goes to a person, one reason per line."
+    }
+  },
+  "required": [
+    "scopeVersion",
+    "scope",
+    "next"
+  ]
+}

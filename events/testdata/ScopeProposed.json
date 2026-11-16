@@ -1,0 +1,40 @@
+{
+  "scopeVersion": 1,
+  "scope": {
+    "summary": "The CSV export is a new endpoint in orders-service's admin API, reading orders through its existing repository; no event or other service changes.",
+    "repos": [
+      {
+        "repo": "orders-service",
+        "reason": "The admin API and the order repository the export reads are here.",
+        "confidence": 0.9,
+        "hinted": true,
+        "evidence": [
+          {
+            "node": "endpoint:orders-service:GET /admin/invoices/{id}.pdf",
+            "label": "Endpoint",
+            "repo": "orders-service",
+            "commit": "4b825dc642cb6eb9a060e54bf8d69288fbee4904",
+            "note": "The PDF invoice export, the async pattern the intent's notes point at."
+          },
+          {
+            "node": "pkg:example.com/orders-service/internal/admin",
+            "label": "Package",
+            "repo": "orders-service",
+            "commit": "4b825dc642cb6eb9a060e54bf8d69288fbee4904",
+            "note": "Registers the admin routes; the export endpoint goes next to them."
+          }
+        ]
+      }
+    ],
+    "newRepos": [],
+    "boundaries": [],
+    "hints": [
+      {
+        "repo": "orders-service",
+        "verdict": "confirmed",
+        "note": "The admin routes and the PDF export are in orders-service."
+      }
+    ]
+  },
+  "next": "confirm"
+}

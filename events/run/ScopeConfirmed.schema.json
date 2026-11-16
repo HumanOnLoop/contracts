@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/ScopeConfirmed.schema.json",
+  "title": "ScopeConfirmed",
+  "description": "A run's scope is confirmed: the repos it may change, fixed for the run until a scope change is approved or the intent is re-signed. GitHub tokens of the run's Jobs cover these repos only (ADR 0018). Topic hotl.run; subject and key: the run id. Producer: Orchestrator. Main consumers: Knowledge graph (scope precedent), agent runtime (token scope).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scopeVersion": {
+      "$ref": "../common.schema.json#/definitions/ScopeVersion"
+    },
+    "repos": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Repo"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "The repos the run may change, new ones included."
+    },
+    "created": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Repo"
+      },
+      "uniqueItems": true,
+      "description": "Repos created for this run (RepoCreated) and onboarded before planning."
+    },
+    "confirmedBy": {
+      "$ref": "../common.schema.json#/definitions/Person",
+      "description": "Who confirmed it; absent when the run confirmed a scope that needed no one."
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId",
+      "description": "The brief whose decision confirmed it."
+    }
+  },
+  "required": [
+    "scopeVersion",
+    "repos"
+  ]
+}

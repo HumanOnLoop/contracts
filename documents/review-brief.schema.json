@@ -33,7 +33,7 @@
     },
     "raised_by": {
       "type": "string",
-      "enum": ["planner", "implementer", "tester", "reviewer", "integrator", "onboarder"],
+      "enum": ["planner", "implementer", "tester", "reviewer", "integrator", "onboarder", "scoper"],
       "description": "Role of the agent that raised the brief."
     },
     "urgency": {

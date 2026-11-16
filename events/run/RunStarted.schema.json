@@ -20,8 +20,8 @@
       "items": {
         "$ref": "../common.schema.json#/definitions/Repo"
       },
-      "description": "Repos the run may change.",
-      "minItems": 1,
+      "description": "The intent package's repo hints (repos before v0.12.0). The scope, not the hints, decides which repos the run may change (ScopeConfirmed, ADR 0018); empty when the package has no hints.",
+      "minItems": 0,
       "uniqueItems": true
     }
   },

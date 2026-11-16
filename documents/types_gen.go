@@ -4,7 +4,7 @@ package documents
 
 // Front matter of an intent package (docs/design: HOTL — Intent Package Template).
 // Intake assigns id before it validates a package against this schema. Checks that
-// need HOTL's state (known people, connected repos, a due date in the future, a
+// need HOTL's state (known people, attached repos, a due date in the future, a
 // source link that resolves) are intake's, not the schema's.
 type IntentPackage struct {
 	// L1 agent proposes, human approves; L2 agent acts, human can veto; L3 agents
@@ -27,8 +27,14 @@ type IntentPackage struct {
 	// Priority, from the PO.
 	Priority IntentPackagePriority `json:"priority"`
 
-	// Target repos; each must be connected to HOTL and harvested.
-	Repos []string `json:"repos"`
+	// Optional repo hints: repos the developer expects the change to touch. Each must
+	// be attached to HOTL. Hints only guide the scoper, which decides the run's real
+	// scope from the knowledge graph (ADR 0018).
+	RepoHints []string `json:"repo_hints,omitempty,omitzero"`
+
+	// Deprecated since v0.12.0: use repo_hints. Packages written before scoping name
+	// their target repos here; they are read as hints (ADR 0018).
+	Repos []string `json:"repos,omitempty,omitzero"`
 
 	// Link to the PO's original request; optional.
 	Source *string `json:"source,omitempty,omitzero"`
@@ -227,6 +233,7 @@ const ReviewBriefRaisedByIntegrator ReviewBriefRaisedBy = "integrator"
 const ReviewBriefRaisedByOnboarder ReviewBriefRaisedBy = "onboarder"
 const ReviewBriefRaisedByPlanner ReviewBriefRaisedBy = "planner"
 const ReviewBriefRaisedByReviewer ReviewBriefRaisedBy = "reviewer"
+const ReviewBriefRaisedByScoper ReviewBriefRaisedBy = "scoper"
 const ReviewBriefRaisedByTester ReviewBriefRaisedBy = "tester"
 
 type ReviewBriefUrgency string
@@ -239,14 +246,25 @@ const ReviewBriefUrgencyNormal ReviewBriefUrgency = "normal"
 // rule shares (docs/design: Initial System Design, Decisions: rule language), plus
 // a title and a lifecycle status. The body is the rule itself; for an llm rule,
 // natural language an LLM judge applies to a change. Scope fields left out match
-// everything.
+// everything. A boundary rule (kind boundary) protects a boundary between repos:
+// instead of judging a change, it names a condition on a run's scope, and a scope
+// that meets it needs an architect before planning (ADR 0018).
 type Rule struct {
-	// What evaluates the rule: an OPA/Rego policy, an architecture test, or an LLM
-	// judge (natural language).
+	// A boundary rule's condition: a scope meets it when every part given holds.
+	Boundary *RuleBoundary `json:"boundary,omitempty,omitzero"`
+
+	// What evaluates the rule: an OPA/Rego policy, an architecture test, an LLM judge
+	// (natural language), or condition: the declarative boundary condition in the
+	// envelope, evaluated by HOTL's own code (boundary rules).
 	Evaluator RuleEvaluator `json:"evaluator"`
 
 	// Rule id, stable across the rule's versions, for example GO-ERR-1.
 	ID string `json:"id"`
+
+	// change (when left out): the rule judges a change. boundary: the rule protects a
+	// boundary between repos, and its boundary condition is checked against every
+	// run's scope before planning.
+	Kind *RuleKind `json:"kind,omitempty,omitzero"`
 
 	// The role or group that owns the rule and decides on changes to it, for example
 	// architects.
@@ -270,11 +288,48 @@ type Rule struct {
 	Version string `json:"version"`
 }
 
+// A boundary rule's condition: a scope meets it when every part given holds.
+type RuleBoundary struct {
+	// The scope includes at least one of these repos.
+	AnyRepos []string `json:"anyRepos,omitempty,omitzero"`
+
+	// The scope includes at least atLeast repos that depend on one of the repos in
+	// of, by their approved repo profile's dependsOn.
+	Dependents *RuleBoundaryDependents `json:"dependents,omitempty,omitzero"`
+
+	// true: the scope proposes at least one new repo.
+	NewRepo *RuleBoundaryNewRepo `json:"newRepo,omitempty,omitzero"`
+
+	// The scope includes every one of these repos.
+	Repos []string `json:"repos,omitempty,omitzero"`
+}
+
+// The scope includes at least atLeast repos that depend on one of the repos in of,
+// by their approved repo profile's dependsOn.
+type RuleBoundaryDependents struct {
+	// How many, from 1. A string, as front matter values are read as text.
+	AtLeast string `json:"atLeast"`
+
+	// Of corresponds to the JSON schema field "of".
+	Of []string `json:"of"`
+}
+
+type RuleBoundaryNewRepo string
+
+const RuleBoundaryNewRepoFalse RuleBoundaryNewRepo = "false"
+const RuleBoundaryNewRepoTrue RuleBoundaryNewRepo = "true"
+
 type RuleEvaluator string
 
 const RuleEvaluatorArchtest RuleEvaluator = "archtest"
+const RuleEvaluatorCondition RuleEvaluator = "condition"
 const RuleEvaluatorLlm RuleEvaluator = "llm"
 const RuleEvaluatorRego RuleEvaluator = "rego"
+
+type RuleKind string
+
+const RuleKindBoundary RuleKind = "boundary"
+const RuleKindChange RuleKind = "change"
 
 // Where the rule applies: a change is in scope when its repo matches and at least
 // one changed file matches both languages and paths.

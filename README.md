@@ -2,7 +2,7 @@
 
 Part of HOTL (Human On The Loop). The schemas every HOTL service shares, and the Go library generated from them:
 
-- the **event envelope** and a schema for each of the **39 events** in the catalogue, plus RepoAttachRequested,
+- the **event envelope** and a schema for each of the **42 events** in the catalogue, plus RepoAttachRequested,
   RepoProfileApproved, ToolchainImageRequested and ToolchainImageApproved (ADR 0013), one directory per topic;
 - the **front matter** of intent packages, review briefs and rules (the rule envelope), and the **repo profile**
   and the **toolchain image** catalogue entry (JSON, ADR 0013);
@@ -109,6 +109,29 @@ Since v0.9.0 a profile's `image` names an entry of the **toolchain image catalog
 its languages and description. `documents.ParseToolchainImage` validates one; the `profiles` client reads and
 proposes entries (`GetImage`, `ListImages`, `ProposeImage`); `agents.ActivitySmokeImage` (`SmokeRequest`,
 `SmokeResult`) smoke-tests an image.
+
+## Scopes
+
+Since v0.12.0 (ADR 0018) a run is scoped before it is planned. An intent package names optional `repo_hints`;
+`repos` is deprecated and read as hints (`IntentPackage.Hints()`). `IntentSignedOff` carries them as `repoHints`
+(and, for older consumers, `repos`, which may now be empty). The **scope** (`events.Scope` in
+`events/common.schema.json`) lists, per existing repo, a reason, a confidence and evidence (knowledge graph node
+keys with their source commit); proposed new repos (name, purpose, technology, why, a draft profile); the
+rule-protected boundaries it crosses; and a verdict on every hint. Three events carry it on `hotl.run`:
+`ScopeProposed`, `ScopeConfirmed` and `RepoCreated`. `agents.ActivityScope` (`ScopeRequest`, `ScopeResult`) asks the
+scoper, `agents.ActivityCreateRepo` (`CreateRepoRequest`, `CreateRepoResult`) asks the CI/CD adapter for a new repo,
+and `PlanResult.OutOfScope` and `TaskResult.OutOfScope` (`ScopeChange`) are how the planner and the implementer ask
+for more. `scoper` is a new `AgentRole`.
+
+Rules gain a kind: `kind: boundary` with `evaluator: condition` and a `boundary` condition (`repos`, `anyRepos`,
+`dependents: {of, atLeast}`, `newRepo`). Package `scopes` evaluates boundary rules against a scope
+(`Boundaries`, with dependencies from the repos' approved profiles), decides what a run does with a proposal
+(`Next`: confirm, developer or architect) and checks new repo names. `runs.QueryScope` (`ScopeStatus`) is the run
+workflow's query for its scope, which the agent runtime asks before it mints a GitHub token. The MCP server gains
+`list_repos` and `get_nodes`, and packages, endpoints and symbols carry their graph `node` key.
+
+Dropping `repos` from the intent package's required properties breaks HOTL's rule that a required property is
+never dropped; `internal/compat` allows it against v0.11.0 only, with the reason, as a named deprecation.
 
 ## Run signals
 

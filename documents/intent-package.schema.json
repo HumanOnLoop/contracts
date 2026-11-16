@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/osbe/contracts/documents/intent-package.schema.json",
   "title": "IntentPackage",
-  "description": "Front matter of an intent package (docs/design: HOTL — Intent Package Template). Intake assigns id before it validates a package against this schema. Checks that need HOTL's state (known people, connected repos, a due date in the future, a source link that resolves) are intake's, not the schema's.",
+  "description": "Front matter of an intent package (docs/design: HOTL — Intent Package Template). Intake assigns id before it validates a package against this schema. Checks that need HOTL's state (known people, attached repos, a due date in the future, a source link that resolves) are intake's, not the schema's.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -27,6 +27,15 @@
       "minLength": 1,
       "description": "Developer who runs it: a known person with the developer role; the default brief recipient."
     },
+    "repo_hints": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Optional repo hints: repos the developer expects the change to touch. Each must be attached to HOTL. Hints only guide the scoper, which decides the run's real scope from the knowledge graph (ADR 0018)."
+    },
     "repos": {
       "type": "array",
       "minItems": 1,
@@ -35,7 +44,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Target repos; each must be connected to HOTL and harvested."
+      "description": "Deprecated since v0.12.0: use repo_hints. Packages written before scoping name their target repos here; they are read as hints (ADR 0018)."
     },
     "autonomy": {
       "type": "string",
@@ -71,7 +80,6 @@
     "title",
     "po",
     "developer",
-    "repos",
     "autonomy",
     "priority"
   ]

@@ -29,7 +29,7 @@ func TestArtifacts(t *testing.T) {
 			t.Errorf("%s: title %q must equal the file name", a.Path, a.ID)
 		}
 	}
-	want := map[string]int{"hotl": 1, "hotl.intent": 7, "hotl.run": 19, "hotl.brief": 7, "hotl.rule": 7,
+	want := map[string]int{"hotl": 1, "hotl.intent": 7, "hotl.run": 22, "hotl.brief": 7, "hotl.rule": 7,
 		"hotl.knowledge": 3, "hotl.documents": 5}
 	for g, n := range want {
 		if groups[g] != n {

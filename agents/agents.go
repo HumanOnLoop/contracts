@@ -43,6 +43,12 @@ const (
 	ActivityOnboard = "Onboard"
 	// ActivitySmokeImage smoke-tests a toolchain image in a Job without credentials (since v0.9.0, ADR 0013).
 	ActivitySmokeImage = "SmokeImage"
+	// ActivityScope asks the scoper which repos a run touches (since v0.12.0, ADR 0018). The agent runtime
+	// implements it.
+	ActivityScope = "Scope"
+	// ActivityCreateRepo creates a repo an architect approved for a run's scope (since v0.12.0, ADR 0018). The CI/CD
+	// adapter implements it.
+	ActivityCreateRepo = "CreateRepo"
 )
 
 // RunRef identifies the run an activity works for. Every request carries one.
@@ -169,6 +175,15 @@ type PlanResult struct {
 	// fits): a scope brief recommending to abandon the run.
 	Scope *BriefRef `json:"scope,omitempty"`
 	Usage Usage     `json:"usage,omitzero"`
+	// OutOfScope is set when the planner found the intent needs a repo outside the run's confirmed scope (since
+	// v0.12.0, ADR 0018). Tasks is then empty: the run raises a scope brief, and an approved change re-runs Scoping.
+	OutOfScope *ScopeChange `json:"outOfScope,omitempty"`
+}
+
+// ScopeChange is an agent's request to widen the run's confirmed scope: the repos it needs and why.
+type ScopeChange struct {
+	Repos  []events.Repo `json:"repos"`
+	Reason string        `json:"reason"`
 }
 
 // Outcome is how an agent's attempt ended.
@@ -221,6 +236,9 @@ type TaskResult struct {
 	// it (ADR 0010). Outcome is then blocked and Brief is nil: the orchestrator raises a brief on it itself
 	// (BriefOnRejected). An orchestrator from before v0.6.0 reads it as a failed attempt.
 	Rejected *RejectedBrief `json:"rejected,omitempty"`
+	// OutOfScope is set when the implementer found the task needs a repo outside the run's confirmed scope (since
+	// v0.12.0, ADR 0018). Outcome is then blocked and Brief nil: the run raises the scope brief itself.
+	OutOfScope *ScopeChange `json:"outOfScope,omitempty"`
 }
 
 // CheckRequest asks the rule engine or the reviewer agent to evaluate an attempt's result.
@@ -518,4 +536,52 @@ type SmokeCheck struct {
 	Name   string `json:"name"`
 	Passed bool   `json:"passed"`
 	Output string `json:"output,omitempty"`
+}
+
+// ScopeRequest asks the scoper which repos the run touches (ADR 0018). It reads only the knowledge graph, through
+// the MCP server's read-only tools: no clone, no GitHub token.
+type ScopeRequest struct {
+	Run RunRef `json:"run"`
+	// Hints are the intent package's repo hints. The scoper checks them against the graph instead of trusting them.
+	Hints []events.Repo `json:"hints"`
+	// Version is the scope version this proposal becomes.
+	Version events.ScopeVersion `json:"version"`
+	// Previous is the scope the run had, when it scopes again: a correction, an approved scope change, a re-signed
+	// intent.
+	Previous *events.Scope `json:"previous,omitempty"`
+	// Feedback is why it scopes again: an architect's answer, an agent's scope change, a new intent version.
+	Feedback []string `json:"feedback,omitempty"`
+	Limit    Budget   `json:"limit,omitzero"`
+}
+
+// ScopeResult is the scoper's proposal, after the agent runtime checked it: every repo exists and is attached or is
+// proposed as new, every evidence node is in the graph (with the graph's commit), every hint has a verdict, and
+// Boundaries holds the boundary rules the scope crosses by their conditions.
+type ScopeResult struct {
+	Scope events.Scope `json:"scope"`
+	Usage Usage        `json:"usage,omitzero"`
+}
+
+// CreateRepoRequest asks the CI/CD adapter to create a repo the architect approved for a run's scope (ADR 0018): in
+// the HOTL organisation, with a skeleton for its technology, a CI workflow whose check gates merges, and a ruleset
+// on the default branch where GitHub allows one.
+type CreateRepoRequest struct {
+	Run          RunRef              `json:"run"`
+	ScopeVersion events.ScopeVersion `json:"scopeVersion"`
+	Repo         events.ScopeNewRepo `json:"repo"`
+	// BriefID is the architect's brief that approved it.
+	BriefID events.BriefID `json:"briefId"`
+}
+
+// CreateRepoResult is the created repo. A retried request finds the repo it created and returns it again.
+type CreateRepoResult struct {
+	Repo          events.Repo   `json:"repo"`
+	URL           events.URL    `json:"url"`
+	DefaultBranch events.Branch `json:"defaultBranch"`
+	Commit        events.Commit `json:"commit"`
+	CICheck       string        `json:"ciCheck"`
+	Visibility    string        `json:"visibility"`
+	Protected     bool          `json:"protected"`
+	// Protection says why the default branch is not protected, when it is not.
+	Protection string `json:"protection,omitempty"`
 }

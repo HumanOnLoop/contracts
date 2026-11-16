@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/run/RepoCreated.schema.json",
+  "title": "RepoCreated",
+  "description": "The CI/CD adapter created a repo an architect approved for a run's scope: a skeleton for its technology, a CI check and, where GitHub allows it, branch protection on the default branch (ADR 0018). Topic hotl.run; subject and key: the run id. Producer: CI/CD adapter. Main consumers: Onboarder, harvesters, orchestrator.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repo": {
+      "$ref": "../common.schema.json#/definitions/Repo"
+    },
+    "url": {
+      "$ref": "../common.schema.json#/definitions/Url"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "private",
+        "public"
+      ],
+      "description": "The repo's visibility on GitHub."
+    },
+    "technology": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The skeleton it was created with, for example go."
+    },
+    "defaultBranch": {
+      "$ref": "../common.schema.json#/definitions/Branch"
+    },
+    "commit": {
+      "$ref": "../common.schema.json#/definitions/Commit",
+      "description": "The skeleton's commit on the default branch."
+    },
+    "ciCheck": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The check run the skeleton's CI workflow reports, which gates merges."
+    },
+    "protected": {
+      "type": "boolean",
+      "description": "True when GitHub enforces the default branch's ruleset."
+    },
+    "protection": {
+      "type": "string",
+      "description": "Why the default branch is not protected, when it is not."
+    },
+    "scopeVersion": {
+      "$ref": "../common.schema.json#/definitions/ScopeVersion"
+    }
+  },
+  "required": [
+    "repo",
+    "url",
+    "visibility",
+    "technology",
+    "defaultBranch",
+    "commit",
+    "ciCheck",
+    "protected"
+  ]
+}

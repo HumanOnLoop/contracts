@@ -18,6 +18,10 @@ const (
 	ToolDependentsOf     = "dependents_of"
 	ToolGetDecision      = "get_decision"
 	ToolRecentRuns       = "recent_runs"
+	// ToolListRepos and ToolGetNodes serve the scoper (since v0.12.0, ADR 0018): what repos the graph knows, and the
+	// nodes it cites as evidence, with the commit each was harvested at.
+	ToolListRepos = "list_repos"
+	ToolGetNodes  = "get_nodes"
 )
 
 // ServerName is the MCP server's name in an agent's MCP configuration; Claude Code names its tools
@@ -148,6 +152,8 @@ type DescribeRepoOutput struct {
 
 // Package is a Go package.
 type Package struct {
+	// Node is the package's key in the knowledge graph, for citing it as evidence (since v0.12.0).
+	Node    string `json:"node,omitempty" jsonschema:"the package's node key in the knowledge graph, to cite as evidence"`
 	Path    string `json:"path" jsonschema:"import path"`
 	Dir     string `json:"dir" jsonschema:"directory, relative to the repo root"`
 	Name    string `json:"name"`
@@ -157,6 +163,7 @@ type Package struct {
 
 // Endpoint is an HTTP route a package registers.
 type Endpoint struct {
+	Node    string `json:"node,omitempty" jsonschema:"the endpoint's node key in the knowledge graph, to cite as evidence"`
 	Route   string `json:"route" jsonschema:"for example GET /briefs/{id}"`
 	Package string `json:"package"`
 	File    string `json:"file"`
@@ -184,6 +191,7 @@ type FindSymbolOutput struct {
 
 // Symbol is an exported Go identifier.
 type Symbol struct {
+	Node      string `json:"node,omitempty" jsonschema:"the symbol's node key in the knowledge graph, to cite as evidence"`
 	Name      string `json:"name"`
 	Kind      string `json:"kind" jsonschema:"func, method, type, var or const"`
 	Package   string `json:"package"`
@@ -265,6 +273,52 @@ type Run struct {
 	EndedAt       *time.Time `json:"endedAt,omitempty"`
 	Source        Source     `json:"source"`
 }
+
+// ListReposInput asks for every repo the knowledge graph has harvested.
+type ListReposInput struct{}
+
+// ListReposOutput lists the harvested repos, by name.
+type ListReposOutput struct {
+	Trust string        `json:"trust"`
+	Repos []RepoSummary `json:"repos"`
+}
+
+// RepoSummary is a repo as the graph knows it; describe_repo tells more.
+type RepoSummary struct {
+	Repo      string   `json:"repo"`
+	Node      string   `json:"node" jsonschema:"the repo's node key in the knowledge graph"`
+	Languages []string `json:"languages,omitempty"`
+	Modules   []string `json:"modules,omitempty" jsonschema:"the Go modules the repo defines"`
+	Packages  int      `json:"packages" jsonschema:"harvested packages"`
+	Endpoints int      `json:"endpoints" jsonschema:"HTTP routes its packages register"`
+	Produces  []string `json:"produces,omitempty" jsonschema:"events the repo's code produces"`
+	Consumes  []string `json:"consumes,omitempty" jsonschema:"events or topics the repo's code consumes"`
+	Source    Source   `json:"source"`
+}
+
+// GetNodesInput looks graph nodes up by key: the nodes an agent cites as evidence.
+type GetNodesInput struct {
+	Keys []string `json:"keys" jsonschema:"node keys, for example pkg:github.com/HumanOnLoop/playground or endpoint:playground:GET /version; at most 100"`
+}
+
+// GetNodesOutput is every node found, and the keys that are not in the graph.
+type GetNodesOutput struct {
+	Trust   string     `json:"trust"`
+	Nodes   []NodeInfo `json:"nodes"`
+	Missing []string   `json:"missing" jsonschema:"keys the graph has no node for"`
+}
+
+// NodeInfo is one node: its key, label, a name to show, and where it came from.
+type NodeInfo struct {
+	Node   string `json:"node"`
+	Label  string `json:"label"`
+	Name   string `json:"name,omitempty" jsonschema:"the node's name: import path, route, event, symbol or title"`
+	Origin string `json:"origin" jsonschema:"harvest, stub (another repo refers to it, not harvested yet) or event (run history)"`
+	Source Source `json:"source"`
+}
+
+// MaxNodeKeys bounds a get_nodes request.
+const MaxNodeKeys = 100
 
 // PrecedentUse is what the agent runtime reports when an agent followed a precedent instead of raising a brief:
 // the MCP server checks the precedent was found by that run and emits PrecedentMatched (ADR 0017).

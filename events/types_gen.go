@@ -25,6 +25,7 @@ const AgentRoleIntegrator AgentRole = "integrator"
 const AgentRoleOnboarder AgentRole = "onboarder"
 const AgentRolePlanner AgentRole = "planner"
 const AgentRoleReviewer AgentRole = "reviewer"
+const AgentRoleScoper AgentRole = "scoper"
 const AgentRoleTester AgentRole = "tester"
 
 // A publish step made a merged change available: a module release, schema
@@ -224,6 +225,9 @@ type Channel string
 // Full git commit id (SHA-1 or SHA-256, lowercase hex).
 type Commit string
 
+// How sure the scoper is, from 0 to 1.
+type Confidence float64
+
 // A brief was answered, from whichever channel answered first, or its default
 // applied at the deadline. Topic hotl.brief; subject and key: the brief id.
 // Producer: Review service. Main consumers: Orchestrator (signal), knowledge
@@ -269,6 +273,32 @@ type DocumentRef struct {
 	URI string `json:"uri"`
 }
 
+// A first sketch of a new repo's profile (documents/repo-profile.schema.json):
+// enough to create its skeleton. The onboarder proposes the real profile once the
+// repo exists, and the architect approves it.
+type DraftProfile struct {
+	// Build command.
+	Build *string `json:"build,omitempty,omitzero"`
+
+	// Format check command.
+	Format *string `json:"format,omitempty,omitzero"`
+
+	// The toolchain image catalogue entry its Jobs would run, for example go.
+	Image *string `json:"image,omitempty,omitzero"`
+
+	// Languages of the repo, for example go or python.
+	Languages []string `json:"languages"`
+
+	// Lint command.
+	Lint *string `json:"lint,omitempty,omitzero"`
+
+	// Test command.
+	Test *string `json:"test,omitempty,omitzero"`
+
+	// Globs of the test files.
+	TestFiles []string `json:"testFiles,omitempty,omitzero"`
+}
+
 type Evaluator string
 
 const EvaluatorArchtest Evaluator = "archtest"
@@ -310,7 +340,13 @@ type IntentSignedOff struct {
 	// Package corresponds to the JSON schema field "package".
 	Package DocumentRef `json:"package"`
 
-	// Target repos from the package.
+	// The package's repo hints (repo_hints, and repos of packages written before
+	// v0.12.0). They only guide the scoper (ADR 0018).
+	RepoHints []Repo `json:"repoHints,omitempty,omitzero"`
+
+	// The package's repo hints, under their old name (deprecated since v0.12.0, read
+	// repoHints). Empty when the package has none; the scoper decides the run's repos
+	// (ADR 0018).
 	Repos []Repo `json:"repos"`
 
 	// SignedBy corresponds to the JSON schema field "signedBy".
@@ -508,6 +544,48 @@ type RepoAttachRequested struct {
 	// RequestedBy corresponds to the JSON schema field "requestedBy".
 	RequestedBy Person `json:"requestedBy"`
 }
+
+// The CI/CD adapter created a repo an architect approved for a run's scope: a
+// skeleton for its technology, a CI check and, where GitHub allows it, branch
+// protection on the default branch (ADR 0018). Topic hotl.run; subject and key:
+// the run id. Producer: CI/CD adapter. Main consumers: Onboarder, harvesters,
+// orchestrator.
+type RepoCreated struct {
+	// The check run the skeleton's CI workflow reports, which gates merges.
+	CiCheck string `json:"ciCheck"`
+
+	// The skeleton's commit on the default branch.
+	Commit Commit `json:"commit"`
+
+	// DefaultBranch corresponds to the JSON schema field "defaultBranch".
+	DefaultBranch Branch `json:"defaultBranch"`
+
+	// True when GitHub enforces the default branch's ruleset.
+	Protected bool `json:"protected"`
+
+	// Why the default branch is not protected, when it is not.
+	Protection *string `json:"protection,omitempty,omitzero"`
+
+	// Repo corresponds to the JSON schema field "repo".
+	Repo Repo `json:"repo"`
+
+	// ScopeVersion corresponds to the JSON schema field "scopeVersion".
+	ScopeVersion *ScopeVersion `json:"scopeVersion,omitempty,omitzero"`
+
+	// The skeleton it was created with, for example go.
+	Technology string `json:"technology"`
+
+	// URL corresponds to the JSON schema field "url".
+	URL URL `json:"url"`
+
+	// The repo's visibility on GitHub.
+	Visibility RepoCreatedVisibility `json:"visibility"`
+}
+
+type RepoCreatedVisibility string
+
+const RepoCreatedVisibilityPrivate RepoCreatedVisibility = "private"
+const RepoCreatedVisibilityPublic RepoCreatedVisibility = "public"
 
 // A harvester parsed a repo at a commit; the knowledge graph loads the result.
 // Topic hotl.knowledge; subject and key: the repo. Producer: Harvesters. Main
@@ -778,7 +856,9 @@ type RunStarted struct {
 	// IntentVersion corresponds to the JSON schema field "intentVersion".
 	IntentVersion IntentVersion `json:"intentVersion"`
 
-	// Repos the run may change.
+	// The intent package's repo hints (repos before v0.12.0). The scope, not the
+	// hints, decides which repos the run may change (ScopeConfirmed, ADR 0018); empty
+	// when the package has no hints.
 	Repos []Repo `json:"repos"`
 }
 
@@ -814,6 +894,176 @@ const RunSteeredTargetBudget RunSteeredTarget = "budget"
 const RunSteeredTargetCode RunSteeredTarget = "code"
 const RunSteeredTargetPlan RunSteeredTarget = "plan"
 const RunSteeredTargetTask RunSteeredTarget = "task"
+
+// Which repos a run touches, decided by the scoper from the knowledge graph before
+// planning (ADR 0018).
+type Scope struct {
+	// Rule-protected boundaries the scope crosses.
+	Boundaries []ScopeBoundary `json:"boundaries"`
+
+	// One entry per repo hint of the intent package.
+	Hints []ScopeHint `json:"hints"`
+
+	// Repos the run needs that do not exist yet.
+	NewRepos []ScopeNewRepo `json:"newRepos"`
+
+	// Existing repos the run changes.
+	Repos []ScopeRepo `json:"repos"`
+
+	// The scope in a few sentences: the components, endpoints and channels the intent
+	// affects.
+	Summary string `json:"summary"`
+}
+
+// A rule-protected boundary a scope crosses: a boundary rule whose condition the
+// scope meets.
+type ScopeBoundary struct {
+	// How the scope meets the rule's condition.
+	Reason string `json:"reason"`
+
+	// The scope's repos that meet the rule's condition.
+	Repos []Repo `json:"repos,omitempty,omitzero"`
+
+	// Rule corresponds to the JSON schema field "rule".
+	Rule RuleID `json:"rule"`
+
+	// The rule's title.
+	Title *string `json:"title,omitempty,omitzero"`
+}
+
+// A run's scope is confirmed: the repos it may change, fixed for the run until a
+// scope change is approved or the intent is re-signed. GitHub tokens of the run's
+// Jobs cover these repos only (ADR 0018). Topic hotl.run; subject and key: the run
+// id. Producer: Orchestrator. Main consumers: Knowledge graph (scope precedent),
+// agent runtime (token scope).
+type ScopeConfirmed struct {
+	// The brief whose decision confirmed it.
+	BriefID *BriefID `json:"briefId,omitempty,omitzero"`
+
+	// Who confirmed it; absent when the run confirmed a scope that needed no one.
+	ConfirmedBy *Person `json:"confirmedBy,omitempty,omitzero"`
+
+	// Repos created for this run (RepoCreated) and onboarded before planning.
+	Created []Repo `json:"created,omitempty,omitzero"`
+
+	// The repos the run may change, new ones included.
+	Repos []Repo `json:"repos"`
+
+	// ScopeVersion corresponds to the JSON schema field "scopeVersion".
+	ScopeVersion ScopeVersion `json:"scopeVersion"`
+}
+
+// A knowledge graph node that shows why a repo is in a scope: a package, endpoint,
+// event, topic, symbol, module or document the intent affects (ADR 0018).
+type ScopeEvidence struct {
+	// The commit the node was harvested at, as the knowledge graph records it; absent
+	// for nodes from run history.
+	Commit *Commit `json:"commit,omitempty,omitzero"`
+
+	// The node's label, for example Package, Endpoint, Event, Topic, Symbol, Module
+	// or ADR.
+	Label string `json:"label"`
+
+	// The node's key in the knowledge graph, for example
+	// pkg:github.com/HumanOnLoop/playground/internal/api or endpoint:playground:GET
+	// /version.
+	Node string `json:"node"`
+
+	// What the node shows, in a sentence.
+	Note *string `json:"note,omitempty,omitzero"`
+
+	// Repo corresponds to the JSON schema field "repo".
+	Repo Repo `json:"repo"`
+}
+
+// What the scoper made of one of the intent package's repo hints.
+type ScopeHint struct {
+	// Why, citing the evidence.
+	Note string `json:"note"`
+
+	// Repo corresponds to the JSON schema field "repo".
+	Repo Repo `json:"repo"`
+
+	// confirmed: the hint is in the scope; corrected: the evidence points elsewhere,
+	// so it is not; unknown: the graph has nothing on it.
+	Verdict ScopeHintVerdict `json:"verdict"`
+}
+
+type ScopeHintVerdict string
+
+const ScopeHintVerdictConfirmed ScopeHintVerdict = "confirmed"
+const ScopeHintVerdictCorrected ScopeHintVerdict = "corrected"
+const ScopeHintVerdictUnknown ScopeHintVerdict = "unknown"
+
+// A repo the scope needs that does not exist yet. Only an architect can approve
+// one (ADR 0018).
+type ScopeNewRepo struct {
+	// DraftProfile corresponds to the JSON schema field "draftProfile".
+	DraftProfile DraftProfile `json:"draftProfile"`
+
+	// The new repo's name in the HOTL organisation: lower case letters, digits and
+	// hyphens.
+	Name string `json:"name"`
+
+	// What the repo is for, in a sentence or two.
+	Purpose string `json:"purpose"`
+
+	// Its technology, for example go or python; picks the skeleton it is created
+	// with.
+	Technology string `json:"technology"`
+
+	// Why no existing repo fits.
+	Why string `json:"why"`
+}
+
+// The scoper proposed which repos a run touches, with its reasons, confidence and
+// evidence, or that a new repo is needed (ADR 0018). Topic hotl.run; subject and
+// key: the run id. Producer: Orchestrator. Main consumers: Portal, review service
+// (architect brief if a new repo or protected boundary).
+type ScopeProposed struct {
+	// What the run does with the proposal: confirm it (existing repos only, high
+	// confidence, no protected boundary); ask the developer to confirm or correct it
+	// (low confidence); or ask the architect (a new repo or a protected boundary).
+	Next ScopeProposedNext `json:"next"`
+
+	// Why the proposal goes to a person, one reason per line.
+	Reasons []string `json:"reasons,omitempty,omitzero"`
+
+	// Scope corresponds to the JSON schema field "scope".
+	Scope Scope `json:"scope"`
+
+	// ScopeVersion corresponds to the JSON schema field "scopeVersion".
+	ScopeVersion ScopeVersion `json:"scopeVersion"`
+}
+
+type ScopeProposedNext string
+
+const ScopeProposedNextArchitect ScopeProposedNext = "architect"
+const ScopeProposedNextConfirm ScopeProposedNext = "confirm"
+const ScopeProposedNextDeveloper ScopeProposedNext = "developer"
+
+// An existing repo in a scope.
+type ScopeRepo struct {
+	// Confidence corresponds to the JSON schema field "confidence".
+	Confidence Confidence `json:"confidence"`
+
+	// Graph nodes that show it; the agent runtime keeps only nodes the knowledge
+	// graph has, with the graph's own commit.
+	Evidence []ScopeEvidence `json:"evidence"`
+
+	// True when the intent package hinted at this repo.
+	Hinted *bool `json:"hinted,omitempty,omitzero"`
+
+	// Why the intent needs a change in this repo.
+	Reason string `json:"reason"`
+
+	// Repo corresponds to the JSON schema field "repo".
+	Repo Repo `json:"repo"`
+}
+
+// Version of a run's scope: 1 for the first proposal, one more per proposal after
+// it (a re-scope, a correction, a re-signed intent).
+type ScopeVersion int
 
 type Severity string
 

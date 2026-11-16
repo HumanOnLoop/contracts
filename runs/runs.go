@@ -34,3 +34,43 @@ type AbortSignal struct {
 	By     events.Person `json:"by"`
 	Reason string        `json:"reason"`
 }
+
+// QueryScope is the run workflow's query for its scope (since v0.12.0, ADR 0018). The agent runtime asks it before
+// it mints a GitHub token for one of the run's Jobs, and refuses a repo outside a confirmed scope.
+const QueryScope = "scope"
+
+// ScopeStatus answers QueryScope.
+type ScopeStatus struct {
+	// Version is the scope version proposed last; 0 before the first proposal.
+	Version events.ScopeVersion `json:"version"`
+	// Confirmed is set once a scope is confirmed; from then on Repos is the confirmed scope.
+	Confirmed bool `json:"confirmed"`
+	// Repos are the repos the run may change: the confirmed scope, or the last proposal's repos before one is
+	// confirmed.
+	Repos []events.Repo `json:"repos"`
+	// Legacy is set for a run that started before scoping: it has no scope, and its repos are the intent's.
+	Legacy bool `json:"legacy,omitempty"`
+}
+
+// Allows reports whether a Job may get a token for repos: every one is in a confirmed scope, or the run is legacy.
+func (s ScopeStatus) Allows(repos []events.Repo) bool {
+	if s.Legacy {
+		return true
+	}
+	if !s.Confirmed {
+		return false
+	}
+	for _, r := range repos {
+		found := false
+		for _, o := range s.Repos {
+			if o == r {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}

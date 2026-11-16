@@ -2,10 +2,18 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/osbe/contracts/documents/rule.schema.json",
   "title": "Rule",
-  "description": "Front matter of a rule definition in the rules repo: the rule envelope every rule shares (docs/design: Initial System Design, Decisions: rule language), plus a title and a lifecycle status. The body is the rule itself; for an llm rule, natural language an LLM judge applies to a change. Scope fields left out match everything.",
+  "description": "Front matter of a rule definition in the rules repo: the rule envelope every rule shares (docs/design: Initial System Design, Decisions: rule language), plus a title and a lifecycle status. The body is the rule itself; for an llm rule, natural language an LLM judge applies to a change. Scope fields left out match everything. A boundary rule (kind boundary) protects a boundary between repos: instead of judging a change, it names a condition on a run's scope, and a scope that meets it needs an architect before planning (ADR 0018).",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "title", "scope", "severity", "owner", "version", "evaluator"],
+  "required": [
+    "id",
+    "title",
+    "scope",
+    "severity",
+    "owner",
+    "version",
+    "evaluator"
+  ],
   "properties": {
     "id": {
       "type": "string",
@@ -26,26 +34,38 @@
         "repos": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": "string", "minLength": 1},
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "description": "Repo names, or * for every repo."
         },
         "languages": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": "string", "pattern": "^[a-z][a-z0-9+#-]*$"},
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9+#-]*$"
+          },
           "description": "Languages of the changed files, for example go or yaml."
         },
         "paths": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": "string", "minLength": 1},
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "description": "Slash-separated glob patterns relative to the repo root; ** matches any number of directories."
         }
       }
     },
     "severity": {
       "type": "string",
-      "enum": ["hard", "soft"],
+      "enum": [
+        "hard",
+        "soft"
+      ],
       "description": "hard blocks a change; soft warns."
     },
     "owner": {
@@ -60,13 +80,91 @@
     },
     "evaluator": {
       "type": "string",
-      "enum": ["rego", "archtest", "llm"],
-      "description": "What evaluates the rule: an OPA/Rego policy, an architecture test, or an LLM judge (natural language)."
+      "enum": [
+        "rego",
+        "archtest",
+        "llm",
+        "condition"
+      ],
+      "description": "What evaluates the rule: an OPA/Rego policy, an architecture test, an LLM judge (natural language), or condition: the declarative boundary condition in the envelope, evaluated by HOTL's own code (boundary rules)."
     },
     "status": {
       "type": "string",
-      "enum": ["proposed", "shadow", "active", "retired"],
+      "enum": [
+        "proposed",
+        "shadow",
+        "active",
+        "retired"
+      ],
       "description": "Lifecycle state; active when left out. Shadow rules are evaluated and reported but never block."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "change",
+        "boundary"
+      ],
+      "description": "change (when left out): the rule judges a change. boundary: the rule protects a boundary between repos, and its boundary condition is checked against every run's scope before planning."
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A boundary rule's condition: a scope meets it when every part given holds.",
+      "properties": {
+        "repos": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The scope includes every one of these repos."
+        },
+        "dependents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "of",
+            "atLeast"
+          ],
+          "description": "The scope includes at least atLeast repos that depend on one of the repos in of, by their approved repo profile's dependsOn.",
+          "properties": {
+            "of": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "atLeast": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "description": "How many, from 1. A string, as front matter values are read as text."
+            }
+          }
+        },
+        "newRepo": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ],
+          "description": "true: the scope proposes at least one new repo."
+        },
+        "anyRepos": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "The scope includes at least one of these repos."
+        }
+      }
     }
   }
 }

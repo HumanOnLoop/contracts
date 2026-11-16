@@ -20,9 +20,17 @@
       "items": {
         "$ref": "../common.schema.json#/definitions/Repo"
       },
-      "description": "Target repos from the package.",
-      "minItems": 1,
+      "description": "The package's repo hints, under their old name (deprecated since v0.12.0, read repoHints). Empty when the package has none; the scoper decides the run's repos (ADR 0018).",
+      "minItems": 0,
       "uniqueItems": true
+    },
+    "repoHints": {
+      "type": "array",
+      "items": {
+        "$ref": "../common.schema.json#/definitions/Repo"
+      },
+      "uniqueItems": true,
+      "description": "The package's repo hints (repo_hints, and repos of packages written before v0.12.0). They only guide the scoper (ADR 0018)."
     },
     "autonomy": {
       "$ref": "../common.schema.json#/definitions/Autonomy"

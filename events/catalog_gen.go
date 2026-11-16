@@ -152,6 +152,12 @@ func (RepoAttachRequested) EventType() string { return "RepoAttachRequested" }
 // Topic returns TopicIntent.
 func (RepoAttachRequested) Topic() string { return TopicIntent }
 
+// EventType returns "RepoCreated".
+func (RepoCreated) EventType() string { return "RepoCreated" }
+
+// Topic returns TopicRun.
+func (RepoCreated) Topic() string { return TopicRun }
+
 // EventType returns "RepoHarvested".
 func (RepoHarvested) EventType() string { return "RepoHarvested" }
 
@@ -236,6 +242,18 @@ func (RunSteered) EventType() string { return "RunSteered" }
 // Topic returns TopicRun.
 func (RunSteered) Topic() string { return TopicRun }
 
+// EventType returns "ScopeConfirmed".
+func (ScopeConfirmed) EventType() string { return "ScopeConfirmed" }
+
+// Topic returns TopicRun.
+func (ScopeConfirmed) Topic() string { return TopicRun }
+
+// EventType returns "ScopeProposed".
+func (ScopeProposed) EventType() string { return "ScopeProposed" }
+
+// Topic returns TopicRun.
+func (ScopeProposed) Topic() string { return TopicRun }
+
 // EventType returns "TaskChecked".
 func (TaskChecked) EventType() string { return "TaskChecked" }
 
@@ -296,6 +314,7 @@ var catalog = map[string]spec{
 	"PlanCreated":             {topic: TopicRun, schema: "events/run/PlanCreated.schema.json", new: func() Payload { return new(PlanCreated) }},
 	"PrecedentMatched":        {topic: TopicKnowledge, schema: "events/knowledge/PrecedentMatched.schema.json", new: func() Payload { return new(PrecedentMatched) }},
 	"RepoAttachRequested":     {topic: TopicIntent, schema: "events/intent/RepoAttachRequested.schema.json", new: func() Payload { return new(RepoAttachRequested) }},
+	"RepoCreated":             {topic: TopicRun, schema: "events/run/RepoCreated.schema.json", new: func() Payload { return new(RepoCreated) }},
 	"RepoHarvested":           {topic: TopicKnowledge, schema: "events/knowledge/RepoHarvested.schema.json", new: func() Payload { return new(RepoHarvested) }},
 	"RepoProfileApproved":     {topic: TopicRule, schema: "events/rule/RepoProfileApproved.schema.json", new: func() Payload { return new(RepoProfileApproved) }},
 	"RuleActivated":           {topic: TopicRule, schema: "events/rule/RuleActivated.schema.json", new: func() Payload { return new(RuleActivated) }},
@@ -310,6 +329,8 @@ var catalog = map[string]spec{
 	"RunResumed":              {topic: TopicRun, schema: "events/run/RunResumed.schema.json", new: func() Payload { return new(RunResumed) }},
 	"RunStarted":              {topic: TopicRun, schema: "events/run/RunStarted.schema.json", new: func() Payload { return new(RunStarted) }},
 	"RunSteered":              {topic: TopicRun, schema: "events/run/RunSteered.schema.json", new: func() Payload { return new(RunSteered) }},
+	"ScopeConfirmed":          {topic: TopicRun, schema: "events/run/ScopeConfirmed.schema.json", new: func() Payload { return new(ScopeConfirmed) }},
+	"ScopeProposed":           {topic: TopicRun, schema: "events/run/ScopeProposed.schema.json", new: func() Payload { return new(ScopeProposed) }},
 	"TaskChecked":             {topic: TopicRun, schema: "events/run/TaskChecked.schema.json", new: func() Payload { return new(TaskChecked) }},
 	"TaskCompleted":           {topic: TopicRun, schema: "events/run/TaskCompleted.schema.json", new: func() Payload { return new(TaskCompleted) }},
 	"TaskFailed":              {topic: TopicRun, schema: "events/run/TaskFailed.schema.json", new: func() Payload { return new(TaskFailed) }},

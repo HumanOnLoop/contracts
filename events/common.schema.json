@@ -82,7 +82,8 @@
         "tester",
         "reviewer",
         "integrator",
-        "onboarder"
+        "onboarder",
+        "scoper"
       ],
       "description": "Role of a HOTL agent."
     },
@@ -277,6 +278,283 @@
         "time"
       ],
       "description": "Kind of budget: tokens, or wall-clock seconds."
+    },
+    "ScopeVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of a run's scope: 1 for the first proposal, one more per proposal after it (a re-scope, a correction, a re-signed intent)."
+    },
+    "Confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "How sure the scoper is, from 0 to 1."
+    },
+    "ScopeEvidence": {
+      "description": "A knowledge graph node that shows why a repo is in a scope: a package, endpoint, event, topic, symbol, module or document the intent affects (ADR 0018).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The node's key in the knowledge graph, for example pkg:github.com/HumanOnLoop/playground/internal/api or endpoint:playground:GET /version."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The node's label, for example Package, Endpoint, Event, Topic, Symbol, Module or ADR."
+        },
+        "repo": {
+          "$ref": "#/definitions/Repo"
+        },
+        "commit": {
+          "$ref": "#/definitions/Commit",
+          "description": "The commit the node was harvested at, as the knowledge graph records it; absent for nodes from run history."
+        },
+        "note": {
+          "type": "string",
+          "description": "What the node shows, in a sentence."
+        }
+      },
+      "required": [
+        "node",
+        "label",
+        "repo"
+      ]
+    },
+    "ScopeRepo": {
+      "description": "An existing repo in a scope.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repo": {
+          "$ref": "#/definitions/Repo"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why the intent needs a change in this repo."
+        },
+        "confidence": {
+          "$ref": "#/definitions/Confidence"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScopeEvidence"
+          },
+          "description": "Graph nodes that show it; the agent runtime keeps only nodes the knowledge graph has, with the graph's own commit."
+        },
+        "hinted": {
+          "type": "boolean",
+          "description": "True when the intent package hinted at this repo."
+        }
+      },
+      "required": [
+        "repo",
+        "reason",
+        "confidence",
+        "evidence"
+      ]
+    },
+    "DraftProfile": {
+      "description": "A first sketch of a new repo's profile (documents/repo-profile.schema.json): enough to create its skeleton. The onboarder proposes the real profile once the repo exists, and the architect approves it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Languages of the repo, for example go or python.",
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "image": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The toolchain image catalogue entry its Jobs would run, for example go."
+        },
+        "format": {
+          "type": "string",
+          "description": "Format check command."
+        },
+        "lint": {
+          "type": "string",
+          "description": "Lint command."
+        },
+        "build": {
+          "type": "string",
+          "description": "Build command."
+        },
+        "test": {
+          "type": "string",
+          "description": "Test command."
+        },
+        "testFiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Globs of the test files.",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "languages"
+      ]
+    },
+    "ScopeNewRepo": {
+      "description": "A repo the scope needs that does not exist yet. Only an architect can approve one (ADR 0018).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The new repo's name in the HOTL organisation: lower case letters, digits and hyphens."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What the repo is for, in a sentence or two."
+        },
+        "technology": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Its technology, for example go or python; picks the skeleton it is created with."
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why no existing repo fits."
+        },
+        "draftProfile": {
+          "$ref": "#/definitions/DraftProfile"
+        }
+      },
+      "required": [
+        "name",
+        "purpose",
+        "technology",
+        "why",
+        "draftProfile"
+      ]
+    },
+    "ScopeBoundary": {
+      "description": "A rule-protected boundary a scope crosses: a boundary rule whose condition the scope meets.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "$ref": "#/definitions/RuleId"
+        },
+        "title": {
+          "type": "string",
+          "description": "The rule's title."
+        },
+        "repos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Repo"
+          },
+          "description": "The scope's repos that meet the rule's condition.",
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the scope meets the rule's condition."
+        }
+      },
+      "required": [
+        "rule",
+        "reason"
+      ]
+    },
+    "ScopeHint": {
+      "description": "What the scoper made of one of the intent package's repo hints.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repo": {
+          "$ref": "#/definitions/Repo"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "corrected",
+            "unknown"
+          ],
+          "description": "confirmed: the hint is in the scope; corrected: the evidence points elsewhere, so it is not; unknown: the graph has nothing on it."
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Why, citing the evidence."
+        }
+      },
+      "required": [
+        "repo",
+        "verdict",
+        "note"
+      ]
+    },
+    "Scope": {
+      "description": "Which repos a run touches, decided by the scoper from the knowledge graph before planning (ADR 0018).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The scope in a few sentences: the components, endpoints and channels the intent affects."
+        },
+        "repos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScopeRepo"
+          },
+          "description": "Existing repos the run changes.",
+          "uniqueItems": true
+        },
+        "newRepos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScopeNewRepo"
+          },
+          "description": "Repos the run needs that do not exist yet.",
+          "uniqueItems": true
+        },
+        "boundaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScopeBoundary"
+          },
+          "description": "Rule-protected boundaries the scope crosses.",
+          "uniqueItems": true
+        },
+        "hints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScopeHint"
+          },
+          "description": "One entry per repo hint of the intent package.",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "summary",
+        "repos",
+        "newRepos",
+        "boundaries",
+        "hints"
+      ]
     }
   }
 }

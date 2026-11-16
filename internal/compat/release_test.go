@@ -60,9 +60,35 @@ func TestBackwardCompatibleWithLastRelease(t *testing.T) {
 			t.Fatalf("%s: %v", cur.Path, err)
 		}
 		for _, i := range issues {
+			if why, ok := deprecated(tag, cur.Path, i); ok {
+				t.Logf("%s: %s: allowed against %s: %s", cur.Path, i, tag, why)
+				continue
+			}
 			t.Errorf("%s is not backward compatible with %s: %s", cur.Path, tag, i)
 		}
 	}
+}
+
+// deprecation is a deliberate exception to the HOTL rule that a required property is never dropped. It names the
+// release it is made against, so it applies to that one comparison and lapses with the next release, and says why
+// no consumer depends on the property any more. The registry's own BACKWARD rule allows these changes.
+type deprecation struct {
+	tag, path, issue, why string
+}
+
+var deprecations = []deprecation{
+	{tag: "v0.11.0", path: "documents/intent-package.schema.json", issue: "/required: required property repos dropped",
+		why: "repos is deprecated for repo_hints (ADR 0018): the scoper decides a run's repos, and intake and the " +
+			"orchestrator read repos, when a package still has it, as hints"},
+}
+
+func deprecated(tag, path string, i Issue) (string, bool) {
+	for _, d := range deprecations {
+		if d.tag == tag && d.path == path && strings.HasPrefix(i.String(), d.issue) {
+			return d.why, true
+		}
+	}
+	return "", false
 }
 
 func repoRoot(t *testing.T) string {
