@@ -3,7 +3,8 @@
 //	registry [-url URL] [-version V] register   create or update every artifact, with BACKWARD and FULL validity rules
 //	registry [-url URL] check                   dry-run every schema against its latest registered version
 //
-// Run it from the repository root; make register and make check-registry do, with a port-forward to k3d-hotl.
+// Run it from the repository root; make register and make check-registry do, against the registry on k3d-hotl
+// (http://hotl-registry.localhost:8480, ADR 0019).
 package main
 
 import (
@@ -21,7 +22,7 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	url := flag.String("url", envOr("HOTL_REGISTRY_URL", "http://localhost:18080/apis/registry/v3"), "registry v3 API base URL")
+	url := flag.String("url", envOr("HOTL_REGISTRY_URL", "http://hotl-registry.localhost:8480/apis/registry/v3"), "registry v3 API base URL")
 	version := flag.String("version", "dev", "contracts version, recorded as a label on every version this run creates")
 	flag.Parse()
 	if flag.NArg() != 1 || (flag.Arg(0) != "register" && flag.Arg(0) != "check") {

@@ -244,8 +244,7 @@ alongside the old one until no consumer needs it.
 | `make test-kafka` | Produce and consume through Kafka on `k3d-hotl`, on temporary topics it deletes afterwards |
 
 The cluster targets need the stack from `platform` (`make up` there). They always use context `k3d-hotl`. They
-reuse `make port-forward` from `platform` if it is running, and otherwise port-forward for the duration of the
-command. In the registry, the envelope is `hotl/Envelope`, events are `hotl.<topic>/<Event>`, and documents
+reach the registry at http://hotl-registry.localhost:8480 and Kafka at localhost:19092 (ADR 0019). In the registry, the envelope is `hotl/Envelope`, events are `hotl.<topic>/<Event>`, and documents
 are `hotl.documents/IntentPackage`, `hotl.documents/ReviewBrief` and `hotl.documents/Rule`. Each version created carries a
 `contracts-version` label with the release that registered it.
 

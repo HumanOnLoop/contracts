@@ -21,7 +21,7 @@ var Rules = map[string]string{
 
 // Client talks to one registry.
 type Client struct {
-	BaseURL string // for example http://localhost:18080/apis/registry/v3
+	BaseURL string // for example http://hotl-registry.localhost:8480/apis/registry/v3
 	HTTP    *http.Client
 }
 

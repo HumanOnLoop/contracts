@@ -6,11 +6,10 @@ SCHEMA_BASE   := https://github.com/osbe/contracts
 GEN_FLAGS     := --only-models --struct-name-from-title --tags json \
 	--capitalization ID --capitalization IDs --capitalization URI --capitalization URL --capitalization PO --capitalization SHA256
 
-# The registry and Kafka on the k3d-hotl cluster (platform repo). The targets below port-forward on their own
-# when nothing listens on these ports yet; with `make port-forward` running in platform they reuse it.
-REGISTRY_PORT := 18080
-KAFKA_PORT    := 19092
-WITH_PF       := scripts/with-port-forward.sh
+# The registry and Kafka on the k3d-hotl cluster (platform repo, ADR 0019): the registry by name through Traefik,
+# Kafka on its own host port.
+REGISTRY_URL := http://hotl-registry.localhost:8480
+KAFKA_PORT   := 19092
 
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 
@@ -50,14 +49,11 @@ check-generated: generate ## Fail if the generated files differ from the committ
 		{ echo "generated code is stale: run 'make generate' and commit the result" >&2; exit 1; }
 
 register: ## Register every schema in the k3d-hotl registry, with BACKWARD compatibility and validity rules on each
-	$(WITH_PF) svc/apicurio-registry $(REGISTRY_PORT) 8080 -- \
-		go run ./internal/cmd/registry -url http://localhost:$(REGISTRY_PORT)/apis/registry/v3 -version $(VERSION) register
+	go run ./internal/cmd/registry -url $(REGISTRY_URL)/apis/registry/v3 -version $(VERSION) register
 
 check-registry: ## Ask the k3d-hotl registry whether every schema is compatible with its latest registered version
-	$(WITH_PF) svc/apicurio-registry $(REGISTRY_PORT) 8080 -- \
-		env HOTL_REGISTRY_URL=http://localhost:$(REGISTRY_PORT)/apis/registry/v3 \
+	env HOTL_REGISTRY_URL=$(REGISTRY_URL)/apis/registry/v3 \
 		go test ./internal/registry -run TestRegistryAcceptsSchemas -count=1 -v
 
 test-kafka: ## Produce and consume through Kafka on k3d-hotl, on temporary topics
-	$(WITH_PF) svc/hotl-kafka-external-bootstrap $(KAFKA_PORT) 9094 -- \
-		env HOTL_KAFKA_BROKERS=localhost:$(KAFKA_PORT) go test ./kafka -run Integration -count=1 -v
+	env HOTL_KAFKA_BROKERS=localhost:$(KAFKA_PORT) go test ./kafka -run Integration -count=1 -v
