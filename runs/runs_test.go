@@ -25,3 +25,23 @@ func TestDecisionSignalJSON(t *testing.T) {
 		t.Errorf("abort json %s", b)
 	}
 }
+
+func TestAcceptSignalJSON(t *testing.T) {
+	if SignalAccept != "Accept" {
+		t.Errorf("SignalAccept = %q, want %q", SignalAccept, "Accept")
+	}
+	b, err := json.Marshal(AcceptSignal{By: "Oskar"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(b) != `{"by":"Oskar"}` {
+		t.Errorf("accept json %s", b)
+	}
+	var got AcceptSignal
+	if err := json.Unmarshal(b, &got); err != nil {
+		t.Fatal(err)
+	}
+	if got.By != "Oskar" {
+		t.Errorf("unmarshaled By = %q, want %q", got.By, "Oskar")
+	}
+}
