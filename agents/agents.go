@@ -102,6 +102,29 @@ type TaskSpec struct {
 	// the task's repo (since v0.14.0, ADR 0022). An empty list covers none, such as a task that only writes an ADR,
 	// and the task is not tested. Nil, in plans from before, covers every criterion.
 	Criteria *[]int `json:"criteria,omitempty"`
+	// Model and Effort optionally choose the model and reasoning effort for this task (since v0.15.0, ADR 0023).
+	// When empty, the agent runtime uses its configured defaults.
+	Model  string `json:"model,omitempty"`
+	Effort string `json:"effort,omitempty"`
+}
+
+// Reasoning effort levels for TaskSpec.Effort (ADR 0023).
+const (
+	EffortLow    = "low"
+	EffortMedium = "medium"
+	EffortHigh   = "high"
+	EffortXHigh  = "xhigh"
+	EffortMax    = "max"
+)
+
+// ValidEffort reports whether e is a known reasoning effort level.
+func ValidEffort(e string) bool {
+	switch e {
+	case EffortLow, EffortMedium, EffortHigh, EffortXHigh, EffortMax:
+		return true
+	default:
+		return false
+	}
 }
 
 // Covered returns the criteria the task covers, out of n: its own, or all n when it names none.

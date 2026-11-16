@@ -26,6 +26,9 @@ func ValidateTasks(tasks []TaskSpec) error {
 		if t.Role != events.AgentRoleImplementer && t.Role != events.AgentRoleTester {
 			return fmt.Errorf("task %s has role %q; plan tasks are for an implementer or a tester", t.ID, t.Role)
 		}
+		if t.Effort != "" && !ValidEffort(t.Effort) {
+			return fmt.Errorf("task %s has unknown effort %q", t.ID, t.Effort)
+		}
 		if t.Criteria != nil {
 			seen := map[int]bool{}
 			for _, c := range *t.Criteria {

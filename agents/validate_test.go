@@ -54,3 +54,14 @@ func TestCriteriaPerTask(t *testing.T) {
 		t.Errorf("nil criteria marshalled: %s", b)
 	}
 }
+
+func TestTaskModelAndEffort(t *testing.T) {
+	for _, eff := range []string{"", EffortLow, EffortMedium, EffortHigh, EffortXHigh, EffortMax} {
+		if err := ValidateTasks([]TaskSpec{{ID: "T-1", Role: events.AgentRoleImplementer, Model: "gemini-4-hydrogen-medium", Effort: eff}}); err != nil {
+			t.Errorf("effort %q: %v", eff, err)
+		}
+	}
+	if err := ValidateTasks([]TaskSpec{{ID: "T-1", Role: events.AgentRoleImplementer, Effort: "turbo"}}); err == nil {
+		t.Error("unknown effort was accepted")
+	}
+}
