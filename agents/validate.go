@@ -82,14 +82,23 @@ var commitPattern = regexp.MustCompile(`^[0-9a-f]{40}([0-9a-f]{24})?$`)
 func ValidCommit(c events.Commit) bool { return commitPattern.MatchString(string(c)) }
 
 // ValidateCoverage checks the plan's tasks against an intent with n acceptance criteria (ADR 0022): a task names
-// only criteria the intent has, and every criterion is covered by at least one task. Tasks from before v0.14.0,
-// which name no criteria, cover every one.
+// only criteria the intent has, and every criterion is covered by at least one task. A plan from before v0.14.0, in
+// which no task names criteria, covers every one; a plan that names them for some tasks but not others is refused.
 func ValidateCoverage(tasks []TaskSpec, n int) error {
-	covered := make([]bool, n+1)
+	legacy := 0
 	for _, t := range tasks {
 		if t.Criteria == nil {
-			return nil
+			legacy++
 		}
+	}
+	switch {
+	case legacy == len(tasks):
+		return nil
+	case legacy > 0:
+		return errors.New("some tasks name their criteria and some do not; give every task its criteria, an empty list for none")
+	}
+	covered := make([]bool, n+1)
+	for _, t := range tasks {
 		for _, c := range *t.Criteria {
 			if c > n {
 				return fmt.Errorf("task %s names criterion %d; the intent has %d", t.ID, c, n)

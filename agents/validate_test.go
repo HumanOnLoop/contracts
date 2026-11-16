@@ -32,6 +32,9 @@ func TestCriteriaPerTask(t *testing.T) {
 	if err := ValidateCoverage([]TaskSpec{old}, 5); err != nil {
 		t.Errorf("a plan from before covers all: %v", err)
 	}
+	if err := ValidateCoverage([]TaskSpec{old, {ID: "T-2", Role: events.AgentRoleImplementer, Criteria: c(9)}}, 2); err == nil {
+		t.Error("a mixed plan was accepted")
+	}
 	if err := ValidateCoverage([]TaskSpec{adr, portal}, 2); err == nil || !strings.Contains(err.Error(), "no task covers criterion 2") {
 		t.Errorf("uncovered: %v", err)
 	}
