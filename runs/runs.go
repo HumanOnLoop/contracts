@@ -13,6 +13,8 @@ const (
 	SignalDecision = "DecisionRecorded"
 	// SignalAbort delivers an AbortSignal.
 	SignalAbort = "Abort"
+	// SignalAccept delivers an AcceptSignal.
+	SignalAccept = "Accept"
 )
 
 // DecisionSignal delivers a recorded decision (DecisionRecorded) to the run.
@@ -33,6 +35,11 @@ type DecisionSignal struct {
 type AbortSignal struct {
 	By     events.Person `json:"by"`
 	Reason string        `json:"reason"`
+}
+
+// AcceptSignal records the PO's acceptance of a delivered run.
+type AcceptSignal struct {
+	By events.Person `json:"by"`
 }
 
 // QueryScope is the run workflow's query for its scope (since v0.12.0, ADR 0018). The agent runtime asks it before
