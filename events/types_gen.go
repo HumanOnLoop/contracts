@@ -20,6 +20,7 @@ const ActorKindPerson ActorKind = "person"
 
 type AgentRole string
 
+const AgentRoleAuthor AgentRole = "author"
 const AgentRoleImplementer AgentRole = "implementer"
 const AgentRoleIntegrator AgentRole = "integrator"
 const AgentRoleOnboarder AgentRole = "onboarder"
@@ -317,6 +318,23 @@ type GraphUpdated struct {
 
 	// Nodes added, changed or removed.
 	NodesChanged int `json:"nodesChanged"`
+}
+
+// A user submitted a free-text intent for the author agent to turn into an intent
+// package. Topic hotl.intent; subject and key: the intent id assigned by intake.
+// Producer: Intake. Main consumers: Orchestrator.
+type IntentDraftSubmitted struct {
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
+
+	// SubmittedBy corresponds to the JSON schema field "submittedBy".
+	SubmittedBy Person `json:"submittedBy"`
+
+	// Text corresponds to the JSON schema field "text".
+	Text string `json:"text"`
 }
 
 // Intent id assigned by intake, for example INT-0042.

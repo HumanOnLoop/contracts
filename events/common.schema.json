@@ -83,7 +83,8 @@
         "reviewer",
         "integrator",
         "onboarder",
-        "scoper"
+        "scoper",
+        "author"
       ],
       "description": "Role of a HOTL agent."
     },

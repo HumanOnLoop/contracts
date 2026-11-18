@@ -293,6 +293,7 @@ const ReviewBriefCategoryScope ReviewBriefCategory = "scope"
 
 type ReviewBriefRaisedBy string
 
+const ReviewBriefRaisedByAuthor ReviewBriefRaisedBy = "author"
 const ReviewBriefRaisedByImplementer ReviewBriefRaisedBy = "implementer"
 const ReviewBriefRaisedByIntegrator ReviewBriefRaisedBy = "integrator"
 const ReviewBriefRaisedByOnboarder ReviewBriefRaisedBy = "onboarder"

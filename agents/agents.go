@@ -49,6 +49,9 @@ const (
 	// ActivityCreateRepo creates a repo an architect approved for a run's scope (since v0.12.0, ADR 0018). The CI/CD
 	// adapter implements it.
 	ActivityCreateRepo = "CreateRepo"
+	// ActivityAuthorIntent asks the author agent to turn a free-text intent into a structured intent package.
+	// The agent runtime implements it.
+	ActivityAuthorIntent = "AuthorIntent"
 )
 
 // RunRef identifies the run an activity works for. Every request carries one.
@@ -659,4 +662,39 @@ type CreateRepoResult struct {
 	Protected     bool          `json:"protected"`
 	// Protection says why the default branch is not protected, when it is not.
 	Protection string `json:"protection,omitempty"`
+}
+
+// AuthorDraft is the structured intent package produced by the author agent. RepoHints stays internal to the
+// agents and is omitted from the user-facing Package.
+type AuthorDraft struct {
+	Title              string          `json:"title"`
+	Outcome            string          `json:"outcome"`
+	AcceptanceCriteria []string        `json:"acceptanceCriteria"`
+	Constraints        []string        `json:"constraints,omitempty"`
+	OutOfScope         string          `json:"outOfScope,omitempty"`
+	NotesForAgents     string          `json:"notesForAgents,omitempty"`
+	Priority           string          `json:"priority,omitempty"`
+	Autonomy           events.Autonomy `json:"autonomy,omitempty"`
+	RepoHints          []events.Repo   `json:"repoHints,omitempty"`
+}
+
+// AuthorIntentRequest asks the author agent to produce (or revise) an intent package from free-text input.
+type AuthorIntentRequest struct {
+	Run         RunRef        `json:"run"`
+	Org         string        `json:"org,omitempty"`
+	Project     string        `json:"project,omitempty"`
+	SubmittedBy events.Person `json:"submittedBy"`
+	Prompt      string        `json:"prompt"`
+	Attempt     int           `json:"attempt"`
+	Previous    *AuthorDraft  `json:"previous,omitempty"`
+	Feedback    []string      `json:"feedback,omitempty"`
+	Limit       Budget        `json:"limit,omitzero"`
+}
+
+// AuthorIntentResult is the author agent's produced intent package and usage. Package holds the user-facing
+// Markdown without repo_hints.
+type AuthorIntentResult struct {
+	Draft   AuthorDraft `json:"draft"`
+	Package []byte      `json:"package"`
+	Usage   Usage       `json:"usage,omitzero"`
 }

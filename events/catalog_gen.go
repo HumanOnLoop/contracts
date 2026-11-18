@@ -80,6 +80,12 @@ func (GraphUpdated) EventType() string { return "GraphUpdated" }
 // Topic returns TopicKnowledge.
 func (GraphUpdated) Topic() string { return TopicKnowledge }
 
+// EventType returns "IntentDraftSubmitted".
+func (IntentDraftSubmitted) EventType() string { return "IntentDraftSubmitted" }
+
+// Topic returns TopicIntent.
+func (IntentDraftSubmitted) Topic() string { return TopicIntent }
+
 // EventType returns "IntentRejected".
 func (IntentRejected) EventType() string { return "IntentRejected" }
 
@@ -326,6 +332,7 @@ var catalog = map[string]spec{
 	"BudgetExceeded":          {topic: TopicRun, schema: "events/run/BudgetExceeded.schema.json", new: func() Payload { return new(BudgetExceeded) }},
 	"DecisionRecorded":        {topic: TopicBrief, schema: "events/brief/DecisionRecorded.schema.json", new: func() Payload { return new(DecisionRecorded) }},
 	"GraphUpdated":            {topic: TopicKnowledge, schema: "events/knowledge/GraphUpdated.schema.json", new: func() Payload { return new(GraphUpdated) }},
+	"IntentDraftSubmitted":    {topic: TopicIntent, schema: "events/intent/IntentDraftSubmitted.schema.json", new: func() Payload { return new(IntentDraftSubmitted) }},
 	"IntentRejected":          {topic: TopicIntent, schema: "events/intent/IntentRejected.schema.json", new: func() Payload { return new(IntentRejected) }},
 	"IntentSignedOff":         {topic: TopicIntent, schema: "events/intent/IntentSignedOff.schema.json", new: func() Payload { return new(IntentSignedOff) }},
 	"IntentSubmitted":         {topic: TopicIntent, schema: "events/intent/IntentSubmitted.schema.json", new: func() Payload { return new(IntentSubmitted) }},

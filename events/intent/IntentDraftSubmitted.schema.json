@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/IntentDraftSubmitted.schema.json",
+  "title": "IntentDraftSubmitted",
+  "description": "A user submitted a free-text intent for the author agent to turn into an intent package. Topic hotl.intent; subject and key: the intent id assigned by intake. Producer: Intake. Main consumers: Orchestrator.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "submittedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "submittedBy",
+    "text"
+  ]
+}
