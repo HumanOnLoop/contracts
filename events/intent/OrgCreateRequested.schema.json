@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/OrgCreateRequested.schema.json",
+  "title": "OrgCreateRequested",
+  "description": "Someone asked to create or update a HOTL organization (ADR 0024): the orchestrator proposes it in the review service and asks an architect in a rule brief. Topic hotl.intent; subject and key: the request id, for example ORG-0001. Producer: Intake. Main consumers: Orchestrator.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requestedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "organization": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef",
+      "description": "The proposed organization record (JSON, per documents/organization.schema.json)."
+    }
+  },
+  "required": [
+    "org",
+    "requestedBy",
+    "organization"
+  ]
+}

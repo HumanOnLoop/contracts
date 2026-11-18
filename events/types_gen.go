@@ -468,6 +468,22 @@ type MergeCompleted struct {
 	Repo Repo `json:"repo"`
 }
 
+// Someone asked to create or update a HOTL organization (ADR 0024): the
+// orchestrator proposes it in the review service and asks an architect in a rule
+// brief. Topic hotl.intent; subject and key: the request id, for example ORG-0001.
+// Producer: Intake. Main consumers: Orchestrator.
+type OrgCreateRequested struct {
+	// Org corresponds to the JSON schema field "org".
+	Org string `json:"org"`
+
+	// The proposed organization record (JSON, per
+	// documents/organization.schema.json).
+	Organization DocumentRef `json:"organization"`
+
+	// RequestedBy corresponds to the JSON schema field "requestedBy".
+	RequestedBy Person `json:"requestedBy"`
+}
+
 // An architect approved a version of an organization record (ADR 0024). Topic
 // hotl.rule; subject and key: the organization id. Producer: Review service.
 type OrganizationApproved struct {
@@ -567,6 +583,24 @@ type ProjectApproved struct {
 
 	// Version corresponds to the JSON schema field "version".
 	Version int `json:"version"`
+}
+
+// Someone asked to create or update a HOTL project under an organization (ADR
+// 0024, ADR 0025): the orchestrator proposes it in the review service and asks an
+// architect in a rule brief. Topic hotl.intent; subject and key: the request id,
+// for example PRJ-0001. Producer: Intake. Main consumers: Orchestrator.
+type ProjectCreateRequested struct {
+	// The proposed project record (JSON, per documents/project.schema.json).
+	Document DocumentRef `json:"document"`
+
+	// Org corresponds to the JSON schema field "org".
+	Org string `json:"org"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project string `json:"project"`
+
+	// RequestedBy corresponds to the JSON schema field "requestedBy".
+	RequestedBy Person `json:"requestedBy"`
 }
 
 // Who a brief is routed to.

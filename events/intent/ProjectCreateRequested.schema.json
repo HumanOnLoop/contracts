@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/ProjectCreateRequested.schema.json",
+  "title": "ProjectCreateRequested",
+  "description": "Someone asked to create or update a HOTL project under an organization (ADR 0024, ADR 0025): the orchestrator proposes it in the review service and asks an architect in a rule brief. Topic hotl.intent; subject and key: the request id, for example PRJ-0001. Producer: Intake. Main consumers: Orchestrator.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requestedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "document": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef",
+      "description": "The proposed project record (JSON, per documents/project.schema.json)."
+    }
+  },
+  "required": [
+    "org",
+    "project",
+    "requestedBy",
+    "document"
+  ]
+}

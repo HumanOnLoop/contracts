@@ -1,0 +1,8 @@
+{
+  "org": "humanonloop",
+  "requestedBy": "Oskar",
+  "organization": {
+    "uri": "http://intake.hotl.svc:8080/orgs/requests/ORG-0001/document",
+    "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  }
+}

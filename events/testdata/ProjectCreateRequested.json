@@ -1,0 +1,9 @@
+{
+  "org": "humanonloop",
+  "project": "hotl",
+  "requestedBy": "Oskar",
+  "document": {
+    "uri": "http://intake.hotl.svc:8080/projects/requests/PRJ-0001/document",
+    "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  }
+}

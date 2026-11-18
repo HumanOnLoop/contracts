@@ -128,6 +128,12 @@ func (MergeCompleted) EventType() string { return "MergeCompleted" }
 // Topic returns TopicRun.
 func (MergeCompleted) Topic() string { return TopicRun }
 
+// EventType returns "OrgCreateRequested".
+func (OrgCreateRequested) EventType() string { return "OrgCreateRequested" }
+
+// Topic returns TopicIntent.
+func (OrgCreateRequested) Topic() string { return TopicIntent }
+
 // EventType returns "OrganizationApproved".
 func (OrganizationApproved) EventType() string { return "OrganizationApproved" }
 
@@ -157,6 +163,12 @@ func (ProjectApproved) EventType() string { return "ProjectApproved" }
 
 // Topic returns TopicRule.
 func (ProjectApproved) Topic() string { return TopicRule }
+
+// EventType returns "ProjectCreateRequested".
+func (ProjectCreateRequested) EventType() string { return "ProjectCreateRequested" }
+
+// Topic returns TopicIntent.
+func (ProjectCreateRequested) Topic() string { return TopicIntent }
 
 // EventType returns "RepoAttachRequested".
 func (RepoAttachRequested) EventType() string { return "RepoAttachRequested" }
@@ -322,11 +334,13 @@ var catalog = map[string]spec{
 	"MainBroken":              {topic: TopicRun, schema: "events/run/MainBroken.schema.json", new: func() Payload { return new(MainBroken) }},
 	"MainVerified":            {topic: TopicRun, schema: "events/run/MainVerified.schema.json", new: func() Payload { return new(MainVerified) }},
 	"MergeCompleted":          {topic: TopicRun, schema: "events/run/MergeCompleted.schema.json", new: func() Payload { return new(MergeCompleted) }},
+	"OrgCreateRequested":      {topic: TopicIntent, schema: "events/intent/OrgCreateRequested.schema.json", new: func() Payload { return new(OrgCreateRequested) }},
 	"OrganizationApproved":    {topic: TopicRule, schema: "events/rule/OrganizationApproved.schema.json", new: func() Payload { return new(OrganizationApproved) }},
 	"PlanApproved":            {topic: TopicRun, schema: "events/run/PlanApproved.schema.json", new: func() Payload { return new(PlanApproved) }},
 	"PlanCreated":             {topic: TopicRun, schema: "events/run/PlanCreated.schema.json", new: func() Payload { return new(PlanCreated) }},
 	"PrecedentMatched":        {topic: TopicKnowledge, schema: "events/knowledge/PrecedentMatched.schema.json", new: func() Payload { return new(PrecedentMatched) }},
 	"ProjectApproved":         {topic: TopicRule, schema: "events/rule/ProjectApproved.schema.json", new: func() Payload { return new(ProjectApproved) }},
+	"ProjectCreateRequested":  {topic: TopicIntent, schema: "events/intent/ProjectCreateRequested.schema.json", new: func() Payload { return new(ProjectCreateRequested) }},
 	"RepoAttachRequested":     {topic: TopicIntent, schema: "events/intent/RepoAttachRequested.schema.json", new: func() Payload { return new(RepoAttachRequested) }},
 	"RepoCreated":             {topic: TopicRun, schema: "events/run/RepoCreated.schema.json", new: func() Payload { return new(RepoCreated) }},
 	"RepoHarvested":           {topic: TopicKnowledge, schema: "events/knowledge/RepoHarvested.schema.json", new: func() Payload { return new(RepoHarvested) }},
