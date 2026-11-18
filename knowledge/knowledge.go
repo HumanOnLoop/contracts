@@ -91,7 +91,7 @@ const (
 func OrgKey(org string) string              { return "org:" + org }
 func ProjectKey(org, project string) string { return "project:" + org + "/" + project }
 func RepoKey(repo string) string            { return "repo:" + repo }
-func PackageKey(importPath string) string { return "pkg:" + importPath }
+func PackageKey(importPath string) string   { return "pkg:" + importPath }
 func SymbolKey(importPath, name string) string {
 	return "sym:" + importPath + "." + name
 }
