@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/documents/organization.schema.json",
+  "title": "Organization",
+  "description": "A HOTL organization (ADR 0024): the top-level tenant under which projects live. Maps 1:1 to a GitHub organization by default and owns org-wide rules, knowledge and shared toolchain images.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "org"
+  ],
+  "properties": {
+    "org": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$",
+      "description": "Organization identifier, for example humanonloop."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the organization record, from 1. Assigned by the review service."
+    },
+    "githubOrg": {
+      "type": "string",
+      "minLength": 1,
+      "description": "GitHub organization name, for example HumanOnLoop. Defaults to org when omitted."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "Human-readable description of the organization."
+    }
+  }
+}

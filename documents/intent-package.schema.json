@@ -11,6 +11,16 @@
       "minLength": 1,
       "description": "Intent id assigned by intake, for example INT-0042; never set by hand."
     },
+    "org": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Organization the intent belongs to (ADR 0024). Defaults to the default organization when omitted."
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project within the organization that the intent targets (ADR 0024)."
+    },
     "title": {
       "type": "string",
       "minLength": 1,

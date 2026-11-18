@@ -21,11 +21,18 @@ type IntentPackage struct {
 	// Intent id assigned by intake, for example INT-0042; never set by hand.
 	ID string `json:"id"`
 
+	// Organization the intent belongs to (ADR 0024). Defaults to the default
+	// organization when omitted.
+	Org *string `json:"org,omitempty,omitzero"`
+
 	// Product owner: a known person with the PO role.
 	PO string `json:"po"`
 
 	// Priority, from the PO.
 	Priority IntentPackagePriority `json:"priority"`
+
+	// Project within the organization that the intent targets (ADR 0024).
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// Optional repo hints: repos the developer expects the change to touch. Each must
 	// be attached to HOTL. Hints only guide the scoper, which decides the run's real
@@ -54,6 +61,58 @@ type IntentPackagePriority string
 const IntentPackagePriorityHigh IntentPackagePriority = "high"
 const IntentPackagePriorityLow IntentPackagePriority = "low"
 const IntentPackagePriorityMedium IntentPackagePriority = "medium"
+
+// A HOTL organization (ADR 0024): the top-level tenant under which projects live.
+// Maps 1:1 to a GitHub organization by default and owns org-wide rules, knowledge
+// and shared toolchain images.
+type Organization struct {
+	// Human-readable description of the organization.
+	Description *string `json:"description,omitempty,omitzero"`
+
+	// GitHub organization name, for example HumanOnLoop. Defaults to org when
+	// omitted.
+	GithubOrg *string `json:"githubOrg,omitempty,omitzero"`
+
+	// Organization identifier, for example humanonloop.
+	Org string `json:"org"`
+
+	// Version of the organization record, from 1. Assigned by the review service.
+	Version *int `json:"version,omitempty,omitzero"`
+}
+
+// A HOTL project under an organization (ADR 0024, ADR 0025): groups one or more
+// repositories with isolated rules, knowledge, optional toolchain images and
+// optional egress allowlists.
+type Project struct {
+	// What this project is and what stack/runtime it targets.
+	Description *string `json:"description,omitempty,omitzero"`
+
+	// Per-project egress allowlist enforced by agent-egress (ADR 0025).
+	Egress *ProjectEgress `json:"egress,omitempty,omitzero"`
+
+	// Optional GitHub organization override for this project's repos.
+	GithubOrg *string `json:"githubOrg,omitempty,omitzero"`
+
+	// Owning organization identifier.
+	Org string `json:"org"`
+
+	// Project identifier, unique within the organization.
+	Project string `json:"project"`
+
+	// Optional dedicated rule/docs repositories for this project, in addition to
+	// .hotl/rules/ and docs/adr/ inside project repos.
+	RulesRepos []string `json:"rulesRepos,omitempty,omitzero"`
+
+	// Version of the project record, from 1. Assigned by the review service.
+	Version *int `json:"version,omitempty,omitzero"`
+}
+
+// Per-project egress allowlist enforced by agent-egress (ADR 0025).
+type ProjectEgress struct {
+	// Hostnames (e.g. repo.maven.apache.org) that agent pods for this project may
+	// reach over HTTPS CONNECT.
+	AllowHosts []string `json:"allowHosts,omitempty,omitzero"`
+}
 
 // How HOTL works on one attached repo: its languages, the image agent Jobs run in,
 // the commands that build, test, lint and format it, the CI check that gates
@@ -85,6 +144,12 @@ type RepoProfile struct {
 
 	// Merge corresponds to the JSON schema field "merge".
 	Merge RepoProfileMerge `json:"merge"`
+
+	// Organization this repository belongs to (ADR 0024).
+	Org *string `json:"org,omitempty,omitzero"`
+
+	// Project this repository belongs to (ADR 0024).
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// Publish steps run after a merge to the default branch is verified. Left out:
 	// the repo publishes nothing.
@@ -271,6 +336,14 @@ type Rule struct {
 	// before it is pushed, such as an architect approving an ADR (ADR 0021).
 	Kind *RuleKind `json:"kind,omitempty,omitzero"`
 
+	// Hierarchy level of the rule (ADR 0025): org applies to all projects in the
+	// organization; project applies only to the project(s) in scope.
+	Level *RuleLevel `json:"level,omitempty,omitzero"`
+
+	// Org-level soft rule ids that this project-level rule supersedes or suppresses
+	// (ADR 0025).
+	Overrides []string `json:"overrides,omitempty,omitzero"`
+
 	// The role or group that owns the rule and decides on changes to it, for example
 	// architects.
 	Owner string `json:"owner"`
@@ -337,17 +410,29 @@ const RuleKindApproval RuleKind = "approval"
 const RuleKindBoundary RuleKind = "boundary"
 const RuleKindChange RuleKind = "change"
 
+type RuleLevel string
+
+const RuleLevelOrg RuleLevel = "org"
+const RuleLevelProject RuleLevel = "project"
+
 // Where the rule applies: a change is in scope when its repo matches and at least
 // one changed file matches both languages and paths.
 type RuleScope struct {
 	// Languages of the changed files, for example go or yaml.
 	Languages []string `json:"languages,omitempty,omitzero"`
 
+	// Organization name, or * for every organization.
+	Org *string `json:"org,omitempty,omitzero"`
+
 	// Slash-separated glob patterns relative to the repo root; ** matches any number
 	// of directories.
 	Paths []string `json:"paths,omitempty,omitzero"`
 
-	// Repo names, or * for every repo.
+	// Project names, or * for every project in the organization.
+	Projects []string `json:"projects,omitempty,omitzero"`
+
+	// Repo names, or * for every repo in scope (bounded to the rule's project for
+	// project-level rules, ADR 0025).
 	Repos []string `json:"repos,omitempty,omitzero"`
 }
 
@@ -379,6 +464,12 @@ type ToolchainImage struct {
 
 	// The name profiles use, for example go or python.
 	Name string `json:"name"`
+
+	// Organization that owns this image (ADR 0025).
+	Org *string `json:"org,omitempty,omitzero"`
+
+	// Project that owns this image, or _org for organization-wide images (ADR 0025).
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// The image, pinned: a registry reference with its manifest digest
 	// (registry/name@sha256:...), or the image id of an image loaded into the

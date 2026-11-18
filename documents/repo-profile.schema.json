@@ -21,6 +21,16 @@
       "minLength": 1,
       "description": "Repo name as connected to HOTL, the same as on GitHub, for example playground."
     },
+    "org": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Organization this repository belongs to (ADR 0024)."
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project this repository belongs to (ADR 0024)."
+    },
     "version": {
       "type": "integer",
       "minimum": 1,

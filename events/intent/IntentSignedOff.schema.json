@@ -34,6 +34,14 @@
     },
     "autonomy": {
       "$ref": "../common.schema.json#/definitions/Autonomy"
+    },
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "required": [

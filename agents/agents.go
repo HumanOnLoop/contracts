@@ -56,6 +56,8 @@ type RunRef struct {
 	RunID         events.RunID         `json:"runId"`
 	IntentID      events.IntentID      `json:"intentId"`
 	IntentVersion events.IntentVersion `json:"intentVersion"`
+	Org           string               `json:"org,omitempty"`
+	Project       string               `json:"project,omitempty"`
 	// Package is the signed intent package this version of the run works against.
 	Package events.DocumentRef `json:"package"`
 	Title   string             `json:"title,omitempty"`

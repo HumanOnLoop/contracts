@@ -31,6 +31,20 @@
       "additionalProperties": false,
       "description": "Where the rule applies: a change is in scope when its repo matches and at least one changed file matches both languages and paths.",
       "properties": {
+        "org": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organization name, or * for every organization."
+        },
+        "projects": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Project names, or * for every project in the organization."
+        },
         "repos": {
           "type": "array",
           "minItems": 1,
@@ -38,7 +52,7 @@
             "type": "string",
             "minLength": 1
           },
-          "description": "Repo names, or * for every repo."
+          "description": "Repo names, or * for every repo in scope (bounded to the rule's project for project-level rules, ADR 0025)."
         },
         "languages": {
           "type": "array",
@@ -106,6 +120,24 @@
         "approval"
       ],
       "description": "change (when left out): the rule judges a change. boundary: the rule protects a boundary between repos, and its boundary condition is checked against every run's scope before planning. approval: a change that touches a file in the rule's scope (repos and paths) needs the rule's owner to approve those files before it is pushed, such as an architect approving an ADR (ADR 0021)."
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "org",
+        "project"
+      ],
+      "description": "Hierarchy level of the rule (ADR 0025): org applies to all projects in the organization; project applies only to the project(s) in scope."
+    },
+    "overrides": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$"
+      },
+      "description": "Org-level soft rule ids that this project-level rule supersedes or suppresses (ADR 0025)."
     },
     "boundary": {
       "type": "object",

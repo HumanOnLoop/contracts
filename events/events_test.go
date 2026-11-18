@@ -17,8 +17,8 @@ import (
 )
 
 func TestCatalogCoversEverySchema(t *testing.T) {
-	if n := len(catalog); n != 46 {
-		t.Errorf("catalogue has %d events: the design's 42 (ScopeProposed, ScopeConfirmed and RepoCreated since ADR 0018), RepoAttachRequested, RepoProfileApproved, ToolchainImageRequested and ToolchainImageApproved (ADR 0013)", n)
+	if n := len(catalog); n != 48 {
+		t.Errorf("catalogue has %d events: expected 48 (46 prior + OrganizationApproved and ProjectApproved per ADR 0024)", n)
 	}
 	for name, s := range catalog {
 		if _, err := fs.Stat(contracts.Schemas, s.schema); err != nil {

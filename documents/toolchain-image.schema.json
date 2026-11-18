@@ -12,6 +12,16 @@
       "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$",
       "description": "The name profiles use, for example go or python."
     },
+    "org": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Organization that owns this image (ADR 0025)."
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project that owns this image, or _org for organization-wide images (ADR 0025)."
+    },
     "version": {
       "type": "integer",
       "minimum": 1,

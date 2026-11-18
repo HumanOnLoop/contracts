@@ -1,0 +1,10 @@
+{
+  "org": "humanonloop",
+  "version": 1,
+  "organization": {
+    "uri": "http://review-service.hotl.svc:8080/documents/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  },
+  "briefId": "BRF-0001",
+  "approvedBy": "Oskar"
+}

@@ -15,6 +15,14 @@
     "profile": {
       "$ref": "../common.schema.json#/definitions/DocumentRef",
       "description": "A profile written by hand (JSON, per documents/repo-profile.schema.json) to propose instead of asking the onboarder for one."
+    },
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "required": [

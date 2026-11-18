@@ -337,8 +337,14 @@ type IntentSignedOff struct {
 	// Autonomy corresponds to the JSON schema field "autonomy".
 	Autonomy Autonomy `json:"autonomy"`
 
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
 	// Package corresponds to the JSON schema field "package".
 	Package DocumentRef `json:"package"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// The package's repo hints (repo_hints, and repos of packages written before
 	// v0.12.0). They only guide the scoper (ADR 0018).
@@ -360,8 +366,14 @@ type IntentSignedOff struct {
 // subject and key: the submission id (intake has not assigned an intent id yet).
 // Producer: Portal. Main consumers: Intake.
 type IntentSubmitted struct {
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
 	// Package corresponds to the JSON schema field "package".
 	Package DocumentRef `json:"package"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// SubmittedBy corresponds to the JSON schema field "submittedBy".
 	SubmittedBy Person `json:"submittedBy"`
@@ -374,11 +386,17 @@ type IntentValidated struct {
 	// Developer corresponds to the JSON schema field "developer".
 	Developer Person `json:"developer"`
 
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
 	// Package corresponds to the JSON schema field "package".
 	Package DocumentRef `json:"package"`
 
 	// PO corresponds to the JSON schema field "po".
 	PO Person `json:"po"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// Subject of the IntentSubmitted event this answers.
 	SubmissionID string `json:"submissionId"`
@@ -450,6 +468,25 @@ type MergeCompleted struct {
 	Repo Repo `json:"repo"`
 }
 
+// An architect approved a version of an organization record (ADR 0024). Topic
+// hotl.rule; subject and key: the organization id. Producer: Review service.
+type OrganizationApproved struct {
+	// ApprovedBy corresponds to the JSON schema field "approvedBy".
+	ApprovedBy Person `json:"approvedBy"`
+
+	// BriefID corresponds to the JSON schema field "briefId".
+	BriefID BriefID `json:"briefId"`
+
+	// Org corresponds to the JSON schema field "org".
+	Org string `json:"org"`
+
+	// Organization corresponds to the JSON schema field "organization".
+	Organization DocumentRef `json:"organization"`
+
+	// Version corresponds to the JSON schema field "version".
+	Version int `json:"version"`
+}
+
 // A person known to HOTL, as named in intent packages and review briefs.
 type Person string
 
@@ -510,6 +547,28 @@ type Problem struct {
 	Part string `json:"part"`
 }
 
+// An architect approved a version of a project record (ADR 0024, ADR 0025). Topic
+// hotl.rule; subject and key: <org>/<project>. Producer: Review service.
+type ProjectApproved struct {
+	// ApprovedBy corresponds to the JSON schema field "approvedBy".
+	ApprovedBy Person `json:"approvedBy"`
+
+	// BriefID corresponds to the JSON schema field "briefId".
+	BriefID BriefID `json:"briefId"`
+
+	// Document corresponds to the JSON schema field "document".
+	Document DocumentRef `json:"document"`
+
+	// Org corresponds to the JSON schema field "org".
+	Org string `json:"org"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project string `json:"project"`
+
+	// Version corresponds to the JSON schema field "version".
+	Version int `json:"version"`
+}
+
 // Who a brief is routed to.
 type Recipient struct {
 	// What kind of recipient name is.
@@ -534,9 +593,15 @@ type Repo string
 // subject and key: the attachment id, for example ATT-0001. Producer: Intake. Main
 // consumers: Orchestrator (starts the attachment).
 type RepoAttachRequested struct {
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
 	// A profile written by hand (JSON, per documents/repo-profile.schema.json) to
 	// propose instead of asking the onboarder for one.
 	Profile *DocumentRef `json:"profile,omitempty,omitzero"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// Repo corresponds to the JSON schema field "repo".
 	Repo Repo `json:"repo"`
@@ -559,6 +624,12 @@ type RepoCreated struct {
 
 	// DefaultBranch corresponds to the JSON schema field "defaultBranch".
 	DefaultBranch Branch `json:"defaultBranch"`
+
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// True when GitHub enforces the default branch's ruleset.
 	Protected bool `json:"protected"`
@@ -624,8 +695,14 @@ type RepoProfileApproved struct {
 	// BriefID corresponds to the JSON schema field "briefId".
 	BriefID BriefID `json:"briefId"`
 
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
 	// Profile corresponds to the JSON schema field "profile".
 	Profile DocumentRef `json:"profile"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// The profile version now in effect.
 	Version int `json:"version"`
@@ -855,6 +932,12 @@ type RunStarted struct {
 
 	// IntentVersion corresponds to the JSON schema field "intentVersion".
 	IntentVersion IntentVersion `json:"intentVersion"`
+
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// The intent package's repo hints (repos before v0.12.0). The scope, not the
 	// hints, decides which repos the run may change (ScopeConfirmed, ADR 0018); empty
@@ -1177,6 +1260,12 @@ type ToolchainImageApproved struct {
 	// Image corresponds to the JSON schema field "image".
 	Image DocumentRef `json:"image"`
 
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
+
 	// The registration that proposed it, for example IMG-0001.
 	Request *string `json:"request,omitempty,omitzero"`
 
@@ -1195,6 +1284,12 @@ type ToolchainImageRequested struct {
 
 	// The catalogue entry's name.
 	Name string `json:"name"`
+
+	// Org corresponds to the JSON schema field "org".
+	Org *string `json:"org,omitempty,omitzero"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
 
 	// RequestedBy corresponds to the JSON schema field "requestedBy".
 	RequestedBy Person `json:"requestedBy"`

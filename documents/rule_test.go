@@ -125,3 +125,35 @@ evaluator: condition
 		t.Error("accepted kind approve")
 	}
 }
+
+func TestRuleProjectScope(t *testing.T) {
+	projLevel := RuleLevelProject
+	projRule := Rule{
+		Level: &projLevel,
+		Scope: RuleScope{
+			Projects: []string{"java-k8s"},
+			Repos:    []string{"*"},
+			Paths:    []string{"**/*.java"},
+		},
+	}
+	orgRule := Rule{
+		Scope: RuleScope{
+			Repos: []string{"*"},
+		},
+	}
+	if projRule.EffectiveLevel() != RuleLevelProject {
+		t.Errorf("got %v", projRule.EffectiveLevel())
+	}
+	if orgRule.EffectiveLevel() != RuleLevelOrg {
+		t.Errorf("got %v", orgRule.EffectiveLevel())
+	}
+	if !projRule.InProjectScope("acme", "java-k8s", "orders", []string{"src/Main.java"}) {
+		t.Error("expected java-k8s repo to match")
+	}
+	if projRule.InProjectScope("acme", "go-cli", "orders", []string{"src/Main.java"}) {
+		t.Error("project rule must not match another project")
+	}
+	if !orgRule.InProjectScope("acme", "go-cli", "cli", []string{"main.go"}) {
+		t.Error("org rule should match any project")
+	}
+}

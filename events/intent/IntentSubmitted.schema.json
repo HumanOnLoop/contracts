@@ -11,6 +11,14 @@
     },
     "package": {
       "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "required": [

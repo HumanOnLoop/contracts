@@ -10,7 +10,7 @@ import (
 func TestCallerToken(t *testing.T) {
 	key := []byte(strings.Repeat("k", 32))
 	now := time.Date(2026, 11, 16, 12, 0, 0, 0, time.UTC)
-	c := Caller{Run: "RUN-0060-1", Task: "T-1", Role: "implementer", Expires: now.Add(time.Hour)}
+	c := Caller{Run: "RUN-0060-1", Task: "T-1", Role: "implementer", Org: "humanonloop", Project: "hotl", Expires: now.Add(time.Hour)}
 	tok, err := SignCaller(key, c)
 	if err != nil {
 		t.Fatal(err)

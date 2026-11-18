@@ -36,6 +36,34 @@ func (r Rule) State() RuleStatus {
 	return *r.Status
 }
 
+// EffectiveLevel returns the rule's hierarchy level (org or project). When omitted, a rule whose scope names
+// specific projects is project-level; otherwise it is org-level.
+func (r Rule) EffectiveLevel() RuleLevel {
+	if r.Level != nil {
+		return *r.Level
+	}
+	if len(r.Scope.Projects) > 0 && !(len(r.Scope.Projects) == 1 && r.Scope.Projects[0] == "*") {
+		return RuleLevelProject
+	}
+	return RuleLevelOrg
+}
+
+// InProjectScope reports whether a change to repo in (org, project) that touches files is in the rule's scope
+// (ADR 0025). For project-level rules, scope.repos: ["*"] only matches repos within the rule's projects.
+func (r Rule) InProjectScope(org, project, repo string, files []string) bool {
+	s := r.Scope
+	if s.Org != nil && *s.Org != "*" && *s.Org != org {
+		return false
+	}
+	if len(s.Projects) > 0 && !matchAny(s.Projects, func(p string) bool { return p == "*" || p == project }) {
+		return false
+	}
+	if r.EffectiveLevel() == RuleLevelProject && len(s.Projects) == 0 {
+		return false
+	}
+	return r.InScope(repo, files)
+}
+
 // InScope reports whether a change to repo that touches files (slash-separated, relative to the repo root) is in
 // the rule's scope: the repo matches, and at least one file matches both the languages and the paths. A scope
 // field left out matches everything; a change with no files is in scope only if the rule names no languages or

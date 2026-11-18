@@ -14,6 +14,8 @@ import (
 
 // Node labels.
 const (
+	LabelOrg          = "Org"
+	LabelProject      = "Project"
 	LabelRepo         = "Repo"
 	LabelPackage      = "Package"
 	LabelSymbol       = "Symbol"
@@ -36,7 +38,7 @@ const (
 )
 
 // Labels lists every node label.
-var Labels = []string{LabelRepo, LabelPackage, LabelSymbol, LabelEndpoint, LabelTopic, LabelEvent, LabelSchema,
+var Labels = []string{LabelOrg, LabelProject, LabelRepo, LabelPackage, LabelSymbol, LabelEndpoint, LabelTopic, LabelEvent, LabelSchema,
 	LabelModule, LabelRule, LabelRunbook, LabelADR, LabelIntent, LabelRun, LabelTask, LabelBrief, LabelDecision,
 	LabelIntervention, LabelPerson, LabelRole}
 
@@ -67,11 +69,16 @@ const (
 // Provenance props every node carries.
 const (
 	PropKey         = "key"
+	PropOrg         = "org"
+	PropProject     = "project"
 	PropRepo        = "repo"
 	PropCommit      = "commit"
 	PropHarvestedAt = "harvestedAt"
 	PropOrigin      = "origin"
 )
+
+// ProjectOrg is the project property value for organization-level nodes (org rules, org ADRs, org runbooks).
+const ProjectOrg = "_org"
 
 // Origins of a node or edge.
 const (
@@ -81,7 +88,9 @@ const (
 )
 
 // Keys of nodes, unique across the graph.
-func RepoKey(repo string) string          { return "repo:" + repo }
+func OrgKey(org string) string              { return "org:" + org }
+func ProjectKey(org, project string) string { return "project:" + org + "/" + project }
+func RepoKey(repo string) string            { return "repo:" + repo }
 func PackageKey(importPath string) string { return "pkg:" + importPath }
 func SymbolKey(importPath, name string) string {
 	return "sym:" + importPath + "." + name

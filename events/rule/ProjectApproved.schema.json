@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/rule/ProjectApproved.schema.json",
+  "title": "ProjectApproved",
+  "description": "An architect approved a version of a project record (ADR 0024, ADR 0025). Topic hotl.rule; subject and key: <org>/<project>. Producer: Review service.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "document": {
+      "$ref": "../common.schema.json#/definitions/DocumentRef"
+    },
+    "briefId": {
+      "$ref": "../common.schema.json#/definitions/BriefId"
+    },
+    "approvedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    }
+  },
+  "required": [
+    "org",
+    "project",
+    "version",
+    "document",
+    "briefId",
+    "approvedBy"
+  ]
+}

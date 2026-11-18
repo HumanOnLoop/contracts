@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/documents/project.schema.json",
+  "title": "Project",
+  "description": "A HOTL project under an organization (ADR 0024, ADR 0025): groups one or more repositories with isolated rules, knowledge, optional toolchain images and optional egress allowlists.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "org",
+    "project"
+  ],
+  "properties": {
+    "org": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$",
+      "description": "Owning organization identifier."
+    },
+    "project": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$",
+      "description": "Project identifier, unique within the organization."
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the project record, from 1. Assigned by the review service."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "What this project is and what stack/runtime it targets."
+    },
+    "githubOrg": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional GitHub organization override for this project's repos."
+    },
+    "rulesRepos": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Optional dedicated rule/docs repositories for this project, in addition to .hotl/rules/ and docs/adr/ inside project repos."
+    },
+    "egress": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-project egress allowlist enforced by agent-egress (ADR 0025).",
+      "properties": {
+        "allowHosts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Hostnames (e.g. repo.maven.apache.org) that agent pods for this project may reach over HTTPS CONNECT."
+        }
+      }
+    }
+  }
+}

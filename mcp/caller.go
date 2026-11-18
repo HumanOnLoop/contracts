@@ -15,11 +15,13 @@ import (
 // answered, but credits no precedent.
 const HeaderCaller = "Hotl-Caller"
 
-// Caller is who calls the MCP server: an agent Job's run, task and role.
+// Caller is who calls the MCP server: an agent Job's run, task, role, organization and project.
 type Caller struct {
 	Run     string    `json:"run"`
 	Task    string    `json:"task,omitempty"`
 	Role    string    `json:"role"`
+	Org     string    `json:"org,omitempty"`
+	Project string    `json:"project,omitempty"`
 	Expires time.Time `json:"exp"`
 }
 

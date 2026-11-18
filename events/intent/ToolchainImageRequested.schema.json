@@ -17,6 +17,14 @@
     "image": {
       "$ref": "../common.schema.json#/definitions/DocumentRef",
       "description": "The proposed entry (JSON, per documents/toolchain-image.schema.json)."
+    },
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "required": [
