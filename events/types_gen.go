@@ -310,6 +310,9 @@ const EvaluatorRego Evaluator = "rego"
 // or project. Topic hotl.intent; subject and key: the request id assigned by
 // intake (e.g. GOV-0001). Producer: Intake. Main consumers: Orchestrator.
 type GovernanceDocRequested struct {
+	// Action corresponds to the JSON schema field "action".
+	Action *GovernanceDocRequestedAction `json:"action,omitempty,omitzero"`
+
 	// Kind corresponds to the JSON schema field "kind".
 	Kind GovernanceDocRequestedKind `json:"kind"`
 
@@ -322,9 +325,18 @@ type GovernanceDocRequested struct {
 	// SubmittedBy corresponds to the JSON schema field "submittedBy".
 	SubmittedBy Person `json:"submittedBy"`
 
+	// TargetPath corresponds to the JSON schema field "targetPath".
+	TargetPath *string `json:"targetPath,omitempty,omitzero"`
+
 	// Text corresponds to the JSON schema field "text".
 	Text string `json:"text"`
 }
+
+type GovernanceDocRequestedAction string
+
+const GovernanceDocRequestedActionCreate GovernanceDocRequestedAction = "create"
+const GovernanceDocRequestedActionRetire GovernanceDocRequestedAction = "retire"
+const GovernanceDocRequestedActionRevise GovernanceDocRequestedAction = "revise"
 
 type GovernanceDocRequestedKind string
 

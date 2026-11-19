@@ -717,17 +717,19 @@ type GovernanceDraft struct {
 
 // AuthorGovernanceRequest asks the author agent to produce (or revise) an ADR or design rule from free-text input.
 type AuthorGovernanceRequest struct {
-	Run           RunRef           `json:"run"`
-	Kind          string           `json:"kind"`
-	Org           string           `json:"org"`
-	Project       string           `json:"project,omitempty"`
-	SubmittedBy   events.Person    `json:"submittedBy"`
-	Prompt        string           `json:"prompt"`
-	Attempt       int              `json:"attempt"`
-	Previous      *GovernanceDraft `json:"previous,omitempty"`
-	Feedback      []string         `json:"feedback,omitempty"`
-	ExistingFiles []string         `json:"existingFiles,omitempty"`
-	Limit         Budget           `json:"limit,omitzero"`
+	Run             RunRef           `json:"run"`
+	Kind            string           `json:"kind"`
+	Org             string           `json:"org"`
+	Project         string           `json:"project,omitempty"`
+	SubmittedBy     events.Person    `json:"submittedBy"`
+	Prompt          string           `json:"prompt"`
+	Attempt         int              `json:"attempt"`
+	Previous        *GovernanceDraft `json:"previous,omitempty"`
+	Feedback        []string         `json:"feedback,omitempty"`
+	ExistingFiles   []string         `json:"existingFiles,omitempty"`
+	TargetPath      string           `json:"targetPath,omitempty"`
+	ExistingContent string           `json:"existingContent,omitempty"`
+	Limit           Budget           `json:"limit,omitzero"`
 }
 
 // AuthorGovernanceResult is the author agent's produced ADR or design rule and usage.
