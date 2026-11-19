@@ -727,6 +727,7 @@ type AuthorGovernanceRequest struct {
 	Previous        *GovernanceDraft `json:"previous,omitempty"`
 	Feedback        []string         `json:"feedback,omitempty"`
 	ExistingFiles   []string         `json:"existingFiles,omitempty"`
+	AssignedID      string           `json:"assignedId,omitempty"`
 	TargetPath      string           `json:"targetPath,omitempty"`
 	ExistingContent string           `json:"existingContent,omitempty"`
 	Limit           Budget           `json:"limit,omitzero"`
