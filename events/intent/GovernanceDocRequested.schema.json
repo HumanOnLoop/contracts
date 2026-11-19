@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/osbe/contracts/events/intent/GovernanceDocRequested.schema.json",
+  "title": "GovernanceDocRequested",
+  "description": "A user submitted free text to author an ADR or design rule for an organization or project. Topic hotl.intent; subject and key: the request id assigned by intake (e.g. GOV-0001). Producer: Intake. Main consumers: Orchestrator.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["adr", "rule"]
+    },
+    "org": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "submittedBy": {
+      "$ref": "../common.schema.json#/definitions/Person"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "kind",
+    "org",
+    "submittedBy",
+    "text"
+  ]
+}

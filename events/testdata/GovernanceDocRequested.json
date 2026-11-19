@@ -1,0 +1,7 @@
+{
+  "kind": "adr",
+  "org": "swasoft",
+  "project": "the-lab",
+  "submittedBy": "Oskar",
+  "text": "Use PostgreSQL for all persistent storage in the-lab."
+}

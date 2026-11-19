@@ -52,6 +52,9 @@ const (
 	// ActivityAuthorIntent asks the author agent to turn a free-text intent into a structured intent package.
 	// The agent runtime implements it.
 	ActivityAuthorIntent = "AuthorIntent"
+	// ActivityAuthorGovernance asks the author agent to turn free-text input into an ADR or design rule.
+	// The agent runtime implements it.
+	ActivityAuthorGovernance = "AuthorGovernance"
 )
 
 // RunRef identifies the run an activity works for. Every request carries one.
@@ -697,4 +700,38 @@ type AuthorIntentResult struct {
 	Draft   AuthorDraft `json:"draft"`
 	Package []byte      `json:"package"`
 	Usage   Usage       `json:"usage,omitzero"`
+}
+
+const (
+	GovernanceKindADR  = "adr"
+	GovernanceKindRule = "rule"
+)
+
+// GovernanceDraft holds the structured fields of an authored ADR or design rule.
+type GovernanceDraft struct {
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Path     string `json:"path"`
+	Markdown string `json:"markdown"`
+}
+
+// AuthorGovernanceRequest asks the author agent to produce (or revise) an ADR or design rule from free-text input.
+type AuthorGovernanceRequest struct {
+	Run           RunRef           `json:"run"`
+	Kind          string           `json:"kind"`
+	Org           string           `json:"org"`
+	Project       string           `json:"project,omitempty"`
+	SubmittedBy   events.Person    `json:"submittedBy"`
+	Prompt        string           `json:"prompt"`
+	Attempt       int              `json:"attempt"`
+	Previous      *GovernanceDraft `json:"previous,omitempty"`
+	Feedback      []string         `json:"feedback,omitempty"`
+	ExistingFiles []string         `json:"existingFiles,omitempty"`
+	Limit         Budget           `json:"limit,omitzero"`
+}
+
+// AuthorGovernanceResult is the author agent's produced ADR or design rule and usage.
+type AuthorGovernanceResult struct {
+	Draft GovernanceDraft `json:"draft"`
+	Usage Usage           `json:"usage,omitzero"`
 }

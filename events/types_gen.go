@@ -306,6 +306,31 @@ const EvaluatorArchtest Evaluator = "archtest"
 const EvaluatorLlm Evaluator = "llm"
 const EvaluatorRego Evaluator = "rego"
 
+// A user submitted free text to author an ADR or design rule for an organization
+// or project. Topic hotl.intent; subject and key: the request id assigned by
+// intake (e.g. GOV-0001). Producer: Intake. Main consumers: Orchestrator.
+type GovernanceDocRequested struct {
+	// Kind corresponds to the JSON schema field "kind".
+	Kind GovernanceDocRequestedKind `json:"kind"`
+
+	// Org corresponds to the JSON schema field "org".
+	Org string `json:"org"`
+
+	// Project corresponds to the JSON schema field "project".
+	Project *string `json:"project,omitempty,omitzero"`
+
+	// SubmittedBy corresponds to the JSON schema field "submittedBy".
+	SubmittedBy Person `json:"submittedBy"`
+
+	// Text corresponds to the JSON schema field "text".
+	Text string `json:"text"`
+}
+
+type GovernanceDocRequestedKind string
+
+const GovernanceDocRequestedKindAdr GovernanceDocRequestedKind = "adr"
+const GovernanceDocRequestedKindRule GovernanceDocRequestedKind = "rule"
+
 // The knowledge graph changed for a repo; caches for it are stale. Topic
 // hotl.knowledge; subject and key: the repo. Producer: Knowledge graph. Main
 // consumers: MCP server cache.
