@@ -335,6 +335,7 @@ type GovernanceDocRequested struct {
 type GovernanceDocRequestedAction string
 
 const GovernanceDocRequestedActionCreate GovernanceDocRequestedAction = "create"
+const GovernanceDocRequestedActionPromote GovernanceDocRequestedAction = "promote"
 const GovernanceDocRequestedActionRetire GovernanceDocRequestedAction = "retire"
 const GovernanceDocRequestedActionRevise GovernanceDocRequestedAction = "revise"
 

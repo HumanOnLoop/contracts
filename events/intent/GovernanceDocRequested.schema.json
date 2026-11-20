@@ -27,7 +27,7 @@
     },
     "action": {
       "type": "string",
-      "enum": ["create", "revise", "retire"]
+      "enum": ["create", "revise", "retire", "promote"]
     },
     "targetPath": {
       "type": "string",
